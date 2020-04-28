@@ -149,7 +149,7 @@ public class Solver2D {
   }
 
   /**
-   * need to use only for same type of constraints(bottom or top)
+   * need to use only for parallel lines of the same type of constraints(bottom or top)
    * @return constraint with maximal value of free coeffs
    * ex. getMostUpper({ y <= x + 2.0, y <= x + 3.0 }) = { y <= x + 3.0 }
    * */
@@ -158,7 +158,7 @@ public class Solver2D {
   }
 
   /**
-   * need to use only for same type of constraints(bottom or top)
+   * need to use only for parrallel lines of the same type of constraints(bottom or top)
    * @return constraint with minimal value of free coeffs
    * ex. getMostLower({ y >= x + 2.0, y >= x + 3.0 }) = { y >= x + 2.0 }
    * */
@@ -196,7 +196,7 @@ public class Solver2D {
    * @param first - first inequality
    * @param second - second inequality
    * @return inequality with smaller  incline ( A coeff )
-   * ex. getWithGreaterIncline({ y >= x + 3 , y >= -x - 1 }) = { y >= -x - 1 }
+   * ex. getWithSmallerIncline({ y >= x + 3 , y >= -x - 1 }) = { y >= -x - 1 }
    * */
   protected Inequality getWithSmallerIncline(Inequality first, Inequality second) {
     return Double.compare(first.getA(), second.getA()) > 0 ? second : first;

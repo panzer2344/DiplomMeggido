@@ -3,6 +3,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import solver.Solver2D;
 
+import java.util.Stack;
+
 import static model.Inequality.Sign.*;
 import static model.Inequality.ZERO_CONSTRAINT;
 
@@ -184,7 +186,299 @@ public class Solver2DTest {
     Assert.assertEquals(3.0, solver.getRightBorder(zeros), 0.0001);
   }
 
-  private class Solver2DForTest extends Solver2D {
+  /**
+   * getWithSmallerIncline: ex. getWithSmallerIncline({ y >= x + 3 , y >= -x - 1 }) = { y >= -x - 1 }
+   * */
+  @Test
+  public void test20() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(second, solver.getWithSmallerIncline(first, second));
+  }
+
+  /**
+  * getWithGreateInequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Stack<Inequality> inequalityStack = new Stack<>();
+    inequalityStack.push(first);
+    inequalityStack.push(second);
+
+    double left = Double.NEGATIVE_INFINITY;
+    double right = Double.POSITIVE_INFINITY;
+
+    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+
+    Stack<Inequality> expectedStack = new Stack<>();
+    expectedStack.push(second);
+
+    Assert.assertNull(actualIntersection);
+    Assert.assertFalse(inequalityStack.empty());
+    Assert.assertEquals(expectedStack, inequalityStack);rIncline: ex. getWithGreaterIncline({ y >= x + 3 , y >= -x - 1 }) = { y >= x + 3 }
+  * */
+  @Test
+  public void test21() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(first, solver.getWithGreaterIncline(first, second));
+  }
+
+  /**
+   * getIntersection: ex. getIntersection({ y >= x + 3 , y >= -x -1 }) = { x = -2 }
+   * */
+  @Test
+  public void test22() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(-2, solver.getIntersection(first, second), 0.0001);
+  }
+
+  /**
+   * isParallel: ex. isParallel({ y >= x + 3, y >= -x -1 }) = false
+   * */
+  @Test
+  public void test23() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertFalse(solver.isParallel(first, second));
+  }
+
+  /**
+   * isParallel: ex. isParallel({ y >= x + 3, y >= x - 1 }) = true
+   * */
+  @Test
+  public void test24() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertTrue(solver.isParallel(first, second));
+  }
+
+  /**
+   * getMostLower: ex. getMostLower({ y >= x + 3, y >= x - 1 }) = { y >= x - 1 }
+   * */
+  @Test
+  public void test25() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(second, solver.getMostLower(first, second));
+  }
+
+  /**
+   * getMostUpper: ex. getMostUpper({ y <= x + 3, y <= x - 1 }) = { y <= x + 3 }
+   * */
+  @Test
+  public void test26() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(first, solver.getMostUpper(first, second));
+  }
+
+  /**
+   * isTopConstraint: ex. isTopConstraint({ y <= x + 1 }) = true
+   * */
+  @Test
+  public void test27() {
+    Assert.assertTrue(solver.isTopConstraint(new Inequality(new double[]{1, 1}, LESS_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isTopConstraint: ex. isTopConstraint({ y >= x + 1 }) = false
+   * */
+  @Test
+  public void test28() {
+    Assert.assertFalse(solver.isTopConstraint(new Inequality(new double[]{1, 1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isTopConstraint: ex. isTopConstraint({ y >= -x + 1 }) = false
+   * */
+  @Test
+  public void test29() {
+    Assert.assertFalse(solver.isTopConstraint(new Inequality(new double[]{-1, 1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isTopConstraint: ex. isTopConstraint({ y <= -x + 1 }) = true
+   * */
+  @Test
+  public void test30() {
+    Assert.assertTrue(solver.isTopConstraint(new Inequality(new double[]{-1, 1}, LESS_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isBottomConstraint: ex. isBottomConstraint({ y <= x + 1 }) = false
+   * */
+  @Test
+  public void test31() {
+    Assert.assertFalse(solver.isBottomConstraint(new Inequality(new double[]{1, 1}, LESS_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isBottomConstraint: ex. isBottomConstraint({ y >= x + 1 }) = true
+   * */
+  @Test
+  public void test32() {
+    Assert.assertTrue(solver.isBottomConstraint(new Inequality(new double[]{1, 1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isBottomConstraint: ex. isBottomConstraint({ y >= -x + 1 }) = true
+   * */
+  @Test
+  public void test33() {
+    Assert.assertTrue(solver.isBottomConstraint(new Inequality(new double[]{-1, 1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * isBottomConstraint: ex. isBottomConstraint({ y <= -x + 1 }) = false
+   * */
+  @Test
+  public void test34() {
+    Assert.assertFalse(solver.isBottomConstraint(new Inequality(new double[]{-1, 1}, LESS_OR_EQUAL, !ZERO_CONSTRAINT)));
+  }
+
+  /**
+   * getNonSuitableOnFeasibility: ex. getNonSuitableOnFeasibility({ y <= x + 3, y <= -x - 1 }, left = -1, right = +inf)
+   *  = { y >= x + 3 }
+   * */
+  @Test
+  public void test35() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    double left = -1;
+    double right = Double.POSITIVE_INFINITY;
+
+    Assert.assertEquals(first, solver.getNonSuitableOnFeasibility(first, second, left, right));
+  }
+
+  /**
+   * getNonSuitableOnFeasibility: ex. getNonSuitableOnFeasibility({ y >= -x + 3, y >= x - 1 }, left = -inf, right = 1)
+   *  = { y >= x + 3 }
+   * */
+  @Test
+  public void test36() {
+    Inequality first = new Inequality(new double[]{-1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    double left = Double.NEGATIVE_INFINITY;
+    double right = 1;
+
+    Assert.assertEquals(first, solver.getNonSuitableOnFeasibility(first, second, left, right));
+  }
+
+  /**
+   * getNonSuitableOnParallel: ex. getNonSuitableOnParallel({ y >= x + 3, y >= x -1 }) = { y >= x - 1 }
+   * */
+  @Test
+  public void test37() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(second, solver.getNonSuitableOnParallel(first, second));
+  }
+
+  /**
+   * getNonSuitableOnParallel: ex. getNonSuitableOnParallel({ y <= x + 3, y <= x -1 }) = { y >= x + 3 }
+   * */
+  @Test
+  public void test38() {
+    Inequality first = new Inequality(new double[]{1, 3}, LESS_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, LESS_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertEquals(first, solver.getNonSuitableOnParallel(first, second));
+  }
+
+  /**
+   * getNonSuitableOnParallel on nonParallel: ex. getNonSuitableOnParallel({ y >= x + 3, y >= -x -1 }) = null
+   * */
+  @Test
+  public void test39() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Assert.assertNull(solver.getNonSuitableOnParallel(first, second));
+  }
+
+  /**
+   * testPair: ex. testPair({ y >= x + 3, y >= -x - 1 }, left = -inf, right = +inf) = -2, stack=empty
+   * */
+  @Test
+  public void test40() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Stack<Inequality> inequalityStack = new Stack<>();
+    inequalityStack.push(first);
+    inequalityStack.push(second);
+
+    double left = Double.NEGATIVE_INFINITY;
+    double right = Double.POSITIVE_INFINITY;
+
+    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+
+    Assert.assertEquals(-2, actualIntersection, 0.0001);
+    Assert.assertTrue(inequalityStack.empty());
+  }
+
+  /**
+   * testPair: ex. testPair({ y >= x + 3, y >= -x - 1 }, left = -1, right = +inf) = null, stack={ y >= -x -1 }
+   * */
+  @Test
+  public void test41() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Stack<Inequality> inequalityStack = new Stack<>();
+    inequalityStack.push(first);
+    inequalityStack.push(second);
+
+    double left = -1;
+    double right = Double.POSITIVE_INFINITY;
+
+    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+
+    Stack<Inequality> expectedStack = new Stack<>();
+    expectedStack.push(second);
+
+    Assert.assertNull(actualIntersection);
+    Assert.assertFalse(inequalityStack.empty());
+    Assert.assertEquals(expectedStack, inequalityStack);
+  }
+
+  /**
+   * testPair: ex. testPair({ y >= x + 3, y >= x - 1 }, left = -inf, right = +inf) = null, stack={ y >= x + 3 }
+   * */
+  @Test
+  public void test42() {
+    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+
+    Stack<Inequality> inequalityStack = new Stack<>();
+    inequalityStack.push(first);
+    inequalityStack.push(second);
+
+    double left = Double.NEGATIVE_INFINITY;
+    double right = Double.POSITIVE_INFINITY;
+
+    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+
+    Stack<Inequality> expectedStack = new Stack<>();
+    expectedStack.push(first);
+
+    Assert.assertNull(actualIntersection);
+    Assert.assertFalse(inequalityStack.empty());
+    Assert.assertEquals(expectedStack, inequalityStack);
+  }
+
+  private static class Solver2DForTest extends Solver2D {
     @Override
     public double getLeftBorder(Inequality[] zeros) {
       return super.getLeftBorder(zeros);
@@ -208,6 +502,61 @@ public class Solver2DTest {
     @Override
     public boolean isRightConstraint(Inequality zero) {
       return super.isRightConstraint(zero);
+    }
+
+    @Override
+    protected Double testPair(Stack<Inequality> inequalityStack, double leftBorder, double rightBorder) {
+      return super.testPair(inequalityStack, leftBorder, rightBorder);
+    }
+
+    @Override
+    protected Inequality getNonSuitableOnParallel(Inequality first, Inequality second) {
+      return super.getNonSuitableOnParallel(first, second);
+    }
+
+    @Override
+    protected Inequality getNonSuitableOnFeasibility(Inequality first, Inequality second, double leftBorder, double rightBorder) {
+      return super.getNonSuitableOnFeasibility(first, second, leftBorder, rightBorder);
+    }
+
+    @Override
+    protected boolean isBottomConstraint(Inequality constraint) {
+      return super.isBottomConstraint(constraint);
+    }
+
+    @Override
+    protected boolean isTopConstraint(Inequality constraint) {
+      return super.isTopConstraint(constraint);
+    }
+
+    @Override
+    protected Inequality getMostUpper(Inequality first, Inequality second) {
+      return super.getMostUpper(first, second);
+    }
+
+    @Override
+    protected Inequality getMostLower(Inequality first, Inequality second) {
+      return super.getMostLower(first, second);
+    }
+
+    @Override
+    protected boolean isParallel(Inequality first, Inequality second) {
+      return super.isParallel(first, second);
+    }
+
+    @Override
+    protected double getIntersection(Inequality first, Inequality second) {
+      return super.getIntersection(first, second);
+    }
+
+    @Override
+    protected Inequality getWithGreaterIncline(Inequality first, Inequality second) {
+      return super.getWithGreaterIncline(first, second);
+    }
+
+    @Override
+    protected Inequality getWithSmallerIncline(Inequality first, Inequality second) {
+      return super.getWithSmallerIncline(first, second);
     }
   }
 
