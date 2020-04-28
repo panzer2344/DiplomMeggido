@@ -3,6 +3,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import solver.Solver2D;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 import static model.Inequality.Sign.*;
@@ -402,13 +404,16 @@ public class Solver2DTest {
     inequalityStack.push(first);
     inequalityStack.push(second);
 
+    List<Inequality> nonSuitable = new LinkedList<>();
+
     double left = Double.NEGATIVE_INFINITY;
     double right = Double.POSITIVE_INFINITY;
 
-    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+    Double actualIntersection = solver.testPair(inequalityStack, nonSuitable, left, right);
 
     Assert.assertEquals(-2, actualIntersection, 0.0001);
     Assert.assertTrue(inequalityStack.empty());
+    Assert.assertTrue(nonSuitable.isEmpty());
   }
 
   /**
@@ -423,17 +428,23 @@ public class Solver2DTest {
     inequalityStack.push(first);
     inequalityStack.push(second);
 
+    List<Inequality> nonSuitable = new LinkedList<>();
+
     double left = -1;
     double right = Double.POSITIVE_INFINITY;
 
-    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+    Double actualIntersection = solver.testPair(inequalityStack, nonSuitable, left, right);
 
     Stack<Inequality> expectedStack = new Stack<>();
     expectedStack.push(second);
 
+    List<Inequality> nonSuitableExpected = new LinkedList<>();
+    nonSuitableExpected.add(first);
+
     Assert.assertNull(actualIntersection);
     Assert.assertFalse(inequalityStack.empty());
     Assert.assertEquals(expectedStack, inequalityStack);
+    Assert.assertEquals(nonSuitableExpected, nonSuitable);
   }
 
   /**
@@ -448,17 +459,53 @@ public class Solver2DTest {
     inequalityStack.push(first);
     inequalityStack.push(second);
 
+    List<Inequality> nonSuitable = new LinkedList<>();
+
     double left = Double.NEGATIVE_INFINITY;
     double right = Double.POSITIVE_INFINITY;
 
-    Double actualIntersection = solver.testPair(inequalityStack, left, right);
+    Double actualIntersection = solver.testPair(inequalityStack, nonSuitable, left, right);
 
     Stack<Inequality> expectedStack = new Stack<>();
     expectedStack.push(first);
 
+    List<Inequality> nonSuitableExpected = new LinkedList<>();
+    nonSuitableExpected.add(second);
+
     Assert.assertNull(actualIntersection);
     Assert.assertFalse(inequalityStack.empty());
     Assert.assertEquals(expectedStack, inequalityStack);
+    Assert.assertEquals(nonSuitableExpected, nonSuitable);
+  }
+
+  /**
+   * getIntersections: ex. getIntersections({ y >= x - 3, y >= -x - 1, y >= x - 1, y >= x + 3 }, left = -1.5, right = +inf)
+   *  = { 1 }, nonSuitable = { y >= x + 3, y >= x - 1 }
+   * */
+  @Test
+  public void test43() {
+    Inequality[] inequalities = new Inequality[] {
+            new Inequality(new double[]{1, -3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+
+    double leftBorder = -1.5;
+    double rightBorder = Double.POSITIVE_INFINITY;
+
+    List<Inequality> nonSuitable = new LinkedList<>();
+
+    double[] actualIntersections = solver.getIntersections(inequalities, nonSuitable, leftBorder, rightBorder);
+    double[] expectedIntersections = new double[]{ 1 };
+
+    List<Inequality> nonSuitableExpected = new LinkedList<>();
+    nonSuitableExpected.add(inequalities[2]);
+    nonSuitableExpected.add(inequalities[3]);
+
+    Assert.assertNotNull(actualIntersections);
+    Assert.assertFalse(nonSuitable.isEmpty());
+    Assert.assertArrayEquals(expectedIntersections, actualIntersections, 0.00001);
+    Assert.assertEquals(nonSuitableExpected, nonSuitable);
   }
 
   private static class Solver2DForTest extends Solver2D {
@@ -488,8 +535,13 @@ public class Solver2DTest {
     }
 
     @Override
-    protected Double testPair(Stack<Inequality> inequalityStack, double leftBorder, double rightBorder) {
-      return super.testPair(inequalityStack, leftBorder, rightBorder);
+    public double[] getIntersections(Inequality[] inequalities, List<Inequality> nonSuitable, double leftBorder, double rightBorder) {
+      return super.getIntersections(inequalities, nonSuitable, leftBorder, rightBorder);
+    }
+
+    @Override
+    protected Double testPair(Stack<Inequality> inequalityStack, List<Inequality> nonSuitableIneqs, double leftBorder, double rightBorder) {
+      return super.testPair(inequalityStack, nonSuitableIneqs, leftBorder, rightBorder);
     }
 
     @Override

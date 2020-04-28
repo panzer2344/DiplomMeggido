@@ -2,6 +2,9 @@ package solver;
 
 import model.Inequality;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 
 import static model.Inequality.Sign.*;
@@ -12,9 +15,29 @@ public class Solver2D {
 
   }
 
+  /**
+   * @param inequalities input inequalities array, for splitting and filtering
+   * @param leftBorder leftBorder of feasible set
+   * @param rightBorder rightBorder of feasible set
+   * @param nonSuitable array for outputting, contains all inequalities, that marked non suitable
+   * split by pairs and delete some inequalities for suitable and move nonSuitable from input array to output list parameter in runtime
+   * @return array of intersections
+   * */
+  public double[] getIntersections(Inequality[] inequalities, List<Inequality> nonSuitable, double leftBorder, double rightBorder) {
+    // create list for storing result intersections
+    List<Double> intersections = new LinkedList<>();
+    // stack for inequalities, used for splitting on pairs
+    Stack<Inequality> inequalityStack = new Stack<>();
+    for(Inequality inequality : inequalities) inequalityStack.push(inequality);
+    // test pairs . add all testPair output, null values too
+    while(inequalityStack.size() > 1)  intersections.add(testPair(inequalityStack, nonSuitable, leftBorder, rightBorder));
+    // filter intersection on non null values, then map list to array and return
+    return intersections.stream().filter(Objects::nonNull).mapToDouble(Double::doubleValue).toArray();
+  }
 
   /**
    * @param inequalityStack
+   * @param nonSuitableIneqs
    * @param leftBorder
    * @param rightBorder
    *
@@ -26,7 +49,7 @@ public class Solver2D {
    *    if one of this two constraints not suitable for future finding (parallel ,of out of feasible x set), then
    *      drop this one, and another move to stack
    * */
-  protected Double testPair(Stack<Inequality> inequalityStack, double leftBorder, double rightBorder) {
+  protected Double testPair(Stack<Inequality> inequalityStack, List<Inequality> nonSuitableIneqs, double leftBorder, double rightBorder) {
     Inequality first = inequalityStack.pop();
     Inequality second = inequalityStack.pop();
 
@@ -35,12 +58,14 @@ public class Solver2D {
 
     nonSuitable = getNonSuitableOnParallel(first, second);
     if(nonSuitable != null) {
+      nonSuitableIneqs.add(nonSuitable);
       inequalityStack.push( nonSuitable.equals(first) ? second : first );
       return null;
     }
 
     nonSuitable = getNonSuitableOnFeasibility(first, second, leftBorder, rightBorder);
     if(nonSuitable != null) {
+      nonSuitableIneqs.add(nonSuitable);
       inequalityStack.push( nonSuitable.equals(first) ? second : first );
       return null;
     }
