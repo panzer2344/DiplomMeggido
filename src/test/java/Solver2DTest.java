@@ -198,24 +198,7 @@ public class Solver2DTest {
   }
 
   /**
-  * getWithGreateInequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
-    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
-
-    Stack<Inequality> inequalityStack = new Stack<>();
-    inequalityStack.push(first);
-    inequalityStack.push(second);
-
-    double left = Double.NEGATIVE_INFINITY;
-    double right = Double.POSITIVE_INFINITY;
-
-    Double actualIntersection = solver.testPair(inequalityStack, left, right);
-
-    Stack<Inequality> expectedStack = new Stack<>();
-    expectedStack.push(second);
-
-    Assert.assertNull(actualIntersection);
-    Assert.assertFalse(inequalityStack.empty());
-    Assert.assertEquals(expectedStack, inequalityStack);rIncline: ex. getWithGreaterIncline({ y >= x + 3 , y >= -x - 1 }) = { y >= x + 3 }
+  * getWithGreaterIncline: ex. getWithGreaterIncline({ y >= x + 3 , y >= -x - 1 }) = { y >= x + 3 }
   * */
   @Test
   public void test21() {
