@@ -1,6 +1,7 @@
 package solver;
 
 import model.Inequality;
+import org.javatuples.Pair;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -111,6 +112,36 @@ public class Solver2D {
     if(intersection > rightBorder) return getWithSmallerIncline(first, second);
     if(intersection < leftBorder) return getWithGreaterIncline(first, second);
     return null;
+  }
+
+  /**
+   * it's equal to F+(X) = min{for i in I+}( sigma_i * X + gamma_i ) for R^2 case from Diplom report
+   * this function compute maximum value of Y in feasible set of Y's (it's equals to minimum value of all top inequalities in X)
+   * so it's depends only on top inequalities and X where from Y computes
+   * @param x - X value where from Y will be computed
+   * @param topIneqs - top inequalities for computing Y ( contains sigma and gamma for R^2 case)
+   * @return maximum value of Y in feasible set of Y's
+   * */
+  protected double getMaxFunctionFeasibleValue(double x, Inequality[] topIneqs) {
+    //double min = Double.POSITIVE_INFINITY;
+    //for(Inequality topIneq : topIneqs) min = Math.min(topIneq.computeFuncR2(x), min);
+    //return min;
+    return getMaxFunctionFeasibleValue(x, getFeasibleTopIneqsAtX(x, topIneqs));
+  }
+
+  /**
+   * it's equal to F_(X) = max{for i in I_}( sigma_i * X + gamma_i ) for R^2 case from Diplom report
+   * this function compute minimum value of Y in feasible set of Y's (it's equals to maximum value of all bottom inequalities in X)
+   * so it's depends only on bottom inequalities and X where from Y computes
+   * @param x - X value where from Y will be computed
+   * @param bottomIneqs - bottom inequalities for computing Y ( contains sigma and gamma for R^2 case)
+   * @return minimum value of Y in feasible set of Y's
+   * */
+  protected double getMinFunctionFeasibleValue(double x, Inequality[] bottomIneqs) {
+    //double max = Double.NEGATIVE_INFINITY;
+    //for(Inequality bottomIneq : bottomIneqs) max = Math.max(bottomIneq.computeFuncR2(x), max);
+    //return max;
+    return getMinFunctionFeasibleValue(x, getFeasibleBottomIneqsAtX(x, bottomIneqs));
   }
 
   /**
@@ -225,6 +256,153 @@ public class Solver2D {
    * */
   protected Inequality getWithSmallerIncline(Inequality first, Inequality second) {
     return Double.compare(first.getA(), second.getA()) > 0 ? second : first;
+  }
+
+  /**
+   * find left incline from bottom border.
+   * before this operation need to find two bottom inequalities, which are intersect at X
+   * @param bottomIneqsAtX - two inequalities from bottom border, which are intersects at X
+   * @return value of left bottom incline ( sigma_i of inequality_i at X )
+   * */
+  protected double getLeftBottomIncline(Pair<Inequality, Inequality> bottomIneqsAtX) {
+    return Math.min(bottomIneqsAtX.getValue0().getA(), bottomIneqsAtX.getValue1().getA());
+  }
+
+  /**
+   * find right incline from bottom border.
+   * before this operation need to find two bottom inequalities, which are intersect at X
+   * @param bottomIneqsAtX - two inequalities from bottom border, which are intersects at X
+   * @return value of right bottom incline ( sigma_i of inequality_i at X )
+   * */
+  protected double getRightBottomIncline(Pair<Inequality, Inequality> bottomIneqsAtX) {
+    return Math.max(bottomIneqsAtX.getValue0().getA(), bottomIneqsAtX.getValue1().getA());
+  }
+
+  /**
+   * find left incline from top border.
+   * before this operation need to find two top inequalities, which are intersect at X
+   * @param topIneqsAtX - two inequalities from top border, which are intersects at X
+   * @return value of left top incline ( sigma_i of inequality_i at X )
+   * */
+  protected double getLeftTopIncline(Pair<Inequality, Inequality> topIneqsAtX) {
+    return Math.max(topIneqsAtX.getValue0().getA(), topIneqsAtX.getValue1().getA());
+  }
+
+  /**
+   * find right incline from top border.
+   * before this operation need to find two top inequalities, which are intersect at X
+   * @param topIneqsAtX - two inequalities from top border, which are intersects at X
+   * @return value of right top incline ( sigma_i of inequality_i at X )
+   * */
+  protected double getRightTopIncline(Pair<Inequality, Inequality> topIneqsAtX) {
+    return Math.min(topIneqsAtX.getValue0().getA(), topIneqsAtX.getValue1().getA());
+  }
+
+  /**
+   * @return true, if x at feasible set, false either
+   * @param x x, where we check
+   * @param bottomIneqs - bottom inequalities(need to find bottom border at X)
+   * @param topIneqs - top inequalities(need to find top border at X)
+   * */
+  protected boolean isFeasible(double x, Inequality[] bottomIneqs, Inequality[] topIneqs) {
+    double minFuncFeasibleValue = getMinFunctionFeasibleValue(x, bottomIneqs);
+    double maxFuncFeasibleValue = getMaxFunctionFeasibleValue(x, topIneqs);
+    return isFeasible(minFuncFeasibleValue, maxFuncFeasibleValue);
+  }
+
+  /**
+   * @return true, if x at feasible set, false either
+   * @param x x, where we check
+   * @param bottomIneqsAtX - two bottom inequalities, which are intersects at X = x (need to find bottom border at X)
+   * @param topIneqsAtX  - two top inequalities, which are intersects at X = x (need to find top border at X)
+   * */
+  protected  boolean isFeasible(double x, Pair<Inequality, Inequality> bottomIneqsAtX, Pair<Inequality, Inequality> topIneqsAtX) {
+    double minFuncFeasibleValue = getMinFunctionFeasibleValue(x, bottomIneqsAtX);
+    double maxFuncFeasibleValue = getMaxFunctionFeasibleValue(x, topIneqsAtX);
+    return isFeasible(minFuncFeasibleValue, maxFuncFeasibleValue);
+  }
+
+  /**
+   * @return true, if x at feasible set, false either
+   * @param minFuncFeasibleValue - F_(X) = max{ for i in I_ }(sigma_i * X + gamma_i)
+   * @param maxFuncFeasibleValue - F+(X) = min{ for i in I+ }(sigma_i * X + gamma_i)
+   * */
+  protected boolean isFeasible(double minFuncFeasibleValue, double maxFuncFeasibleValue) {
+    return Double.compare(maxFuncFeasibleValue, minFuncFeasibleValue) >= 0;
+  }
+
+  /**
+   * it's equal to F_(X) = max{for i in I_}( sigma_i * X + gamma_i ) for R^2 case from Diplom report
+   * this function compute minimum value of Y in feasible set of Y's (it's equals to maximum value of all bottom inequalities in X)
+   * so it's depends only on bottom inequalities and X where from Y computes
+   * @param x
+   * @param bottomIneqsAtX - two inequalities from bottom border, which are intersect at X
+   * @return minimum value of Y in feasible set of Y's
+   * */
+  protected double getMinFunctionFeasibleValue(double x, Pair<Inequality, Inequality> bottomIneqsAtX) {
+    return bottomIneqsAtX.getValue0().computeFuncR2(x);
+  }
+
+  /**
+   * it's equal to F+(X) = min{for i in I+}( sigma_i * X + gamma_i ) for R^2 case from Diplom report
+   * this function compute maximum value of Y in feasible set of Y's (it's equals to minimum value of all top inequalities in X)
+   * so it's depends only on top inequalities and X where from Y computes
+   * @param x
+   * @param topIneqsAtX - two inequalities from top border, which are intersect at X
+   * @return maximum value of Y in feasible set of Y's
+   * */
+  protected double getMaxFunctionFeasibleValue(double x, Pair<Inequality, Inequality> topIneqsAtX) {
+    return topIneqsAtX.getValue0().computeFuncR2(x);
+  }
+
+  /**
+   * find two top inequalities, which are create top border at x
+   * @param x , where we take this two inequalities
+   * @param topIneqs - top inequalities, from which we choose this two
+   * @return pair of two bottom ineqs, intersect at x. if only one ineq are at x, so result[0] = result[1]
+   * */
+  protected Pair<Inequality, Inequality> getFeasibleTopIneqsAtX(double x, Inequality[] topIneqs) {
+    Inequality first = null;
+    Inequality second = null;
+    double min = Double.POSITIVE_INFINITY;
+    for(Inequality topIneq : topIneqs) {
+      double y = topIneq.computeFuncR2(x);
+      if(Double.compare(y, min) < 0) {
+        min = y;
+        first = topIneq;
+        second = null;
+      } else if(Double.compare(y, min) == 0) {
+        if(first == null) first = topIneq;
+        else second = topIneq;
+      }
+    }
+    if(second == null) second = first;
+    return new Pair<>(first, second);
+  }
+
+  /**
+   * find two bottom inequalities, which are create top border at x
+   * @param x , where we take this two inequalities
+   * @param bottomIneqs - bottom inequalities, from which we choose this two
+   * @return pair of two bottom ineqs, intersect at x. if only one ineq are at x, so result[0] = result[1]
+   * */
+  protected Pair<Inequality, Inequality> getFeasibleBottomIneqsAtX(double x, Inequality[] bottomIneqs) {
+    Inequality first = null;
+    Inequality second = null;
+    double max = Double.NEGATIVE_INFINITY;
+    for(Inequality bottomIneq : bottomIneqs) {
+      double y = bottomIneq.computeFuncR2(x);
+      if(Double.compare(y, max) > 0) {
+        max = y;
+        first = bottomIneq;
+        second = null;
+      } else if(Double.compare(y, max) == 0) {
+        if(first == null) first = bottomIneq;
+        else second = bottomIneq;
+      }
+    }
+    if(second == null) second = first;
+    return new Pair<>(first, second);
   }
 
 }

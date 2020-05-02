@@ -33,6 +33,15 @@ public class Inequality {
     return coeffs[coeffs.length - 1];
   }
 
+  /**
+   * in R2 : y = A * x + Free
+   * @param x - where Y will be computed
+   * @return value of Y in X
+   * */
+  public double computeFuncR2(double x) {
+    return coeffs[0] * x + coeffs[coeffs.length - 1];
+  }
+
   public enum Sign {
     GREAT(">"),
     GREAT_OR_EQUAL(">="),
