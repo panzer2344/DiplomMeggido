@@ -405,4 +405,16 @@ public class Solver2D {
     return new Pair<>(first, second);
   }
 
+  protected boolean isFeasibleOnLeft(double leftBottomIncline, double leftTopIncline) {
+    return Double.compare(leftBottomIncline, leftTopIncline) > 0;
+  }
+
+  protected boolean isFeasibleOnRight(double rightBottomIncline, double rightTopIncline) {
+    return Double.compare(rightBottomIncline, rightTopIncline) < 0;
+  }
+
+  protected boolean isUnsolvable(double leftBottomIncline, double rightBottomIncline, double leftTopIncline, double rightTopIncline) {
+    return Double.compare(leftBottomIncline, rightTopIncline) <= 0 && Double.compare(leftTopIncline, rightBottomIncline) <= 0;
+  }
+
 }
