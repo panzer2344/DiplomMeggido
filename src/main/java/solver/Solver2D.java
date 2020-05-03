@@ -1,19 +1,133 @@
 package solver;
 
+import median.MedianFinder;
 import model.Inequality;
 import org.javatuples.Pair;
+import solver.splitter.Splitter2D;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 
 import static model.Inequality.Sign.*;
 
 public class Solver2D {
 
-  public Solver2D() {
+  private final MedianFinder medianFinder = new MedianFinder();
 
+  private Inequality[] top = null;
+  private Inequality[] bot = null;
+  private double leftBorder = Double.NEGATIVE_INFINITY;
+  private double rightBorder = Double.POSITIVE_INFINITY;
+
+  public Solver2D() {}
+
+  public Pair<Double, Double> solve(Inequality[] inequalities){
+    Splitter2D.Splitted splitted = new Splitter2D().split(inequalities);
+
+    leftBorder = getLeftBorder(splitted.getZero());
+    rightBorder = getRightBorder(splitted.getZero());
+
+    top = splitted.getTop();
+    bot = splitted.getBottom();
+
+    return recursiveSolve();
+  }
+
+  protected Pair<Double, Double> recursiveSolve() {
+    if(bot.length <= 1) return bruteForceSolve(top, bot, leftBorder, rightBorder);
+
+    Set<Inequality> nonSuitable = new HashSet<>();
+    double[] intersections = getIntersections(bot, nonSuitable, leftBorder, rightBorder);
+    bot = removeFromArray(bot, nonSuitable);
+
+    double median = medianFinder.find(intersections);
+
+    Pair<Inequality, Inequality> bottomIneqsAtX = getFeasibleBottomIneqsAtX(median, bot);
+    Pair<Inequality, Inequality> topIneqsAtX = getFeasibleTopIneqsAtX(median, top);
+
+    double minFuncFeasibleValue = getMinFunctionFeasibleValue(median, bottomIneqsAtX);
+    double maxFuncFeasibleValue = getMaxFunctionFeasibleValue(median, topIneqsAtX);
+
+    double leftBottomIncline = getLeftBottomIncline(bottomIneqsAtX);
+    double rightBottomIncline = getRightBottomIncline(bottomIneqsAtX);
+    double leftTopIncline = getLeftTopIncline(topIneqsAtX);
+    double rightTopInline = getRightTopIncline(topIneqsAtX);
+
+    if (isFeasible(minFuncFeasibleValue, maxFuncFeasibleValue)) {
+      if (isOptimum(leftBottomIncline, rightBottomIncline)) {
+        double y = bottomIneqsAtX.getValue0().computeFuncR2(median);
+        return new Pair<>(median, y);
+      } else {
+        if (isOptimumOnLeft(leftBottomIncline)) {
+            rightBorder = median;
+        } else if (isOptimumOnRight(rightBottomIncline)) {
+            leftBorder = median;
+        }
+      }
+    } /* else {
+        if ( isFeasibleOnLeft(leftBottomIncline, leftTopIncline) ) {
+            rightBorder = median;
+        } else if ( isFeasibleOnRight(rightBottomIncline, rightTopInline) ) {
+            leftBorder = median;
+        }
+    } */
+
+    return recursiveSolve();
+  }
+
+
+  /**
+   * works correctly only if there are one bot inequality
+   * */
+  protected Pair<Double, Double> bruteForceSolve(Inequality[] top, Inequality[] bot, double leftBorder, double rightBorder) {
+    double min = Double.POSITIVE_INFINITY;
+    // merge two arrays into one common
+    Inequality[] allIneqs = new Inequality[top.length + bot.length];
+    System.arraycopy(top, 0, allIneqs, 0, top.length);
+    System.arraycopy(bot, 0, allIneqs, top.length, bot.length);
+
+    // compute all intersections and find minimum from all of this
+    double resultX = Double.NaN;
+    for(int i = 0; i < allIneqs.length; i++) {
+      for(int j = i + 1; j < allIneqs.length; j++) {
+        Inequality firstCandidate = allIneqs[i];
+        Inequality secondCandidate = allIneqs[j];
+
+        double intersection = getIntersection(firstCandidate, secondCandidate);
+        double y = firstCandidate.computeFuncR2(intersection);
+
+        // if in feasible set, then try to exchange minimum
+        if(intersection >= leftBorder && intersection <= rightBorder) {
+          if(y < min) {
+            min = y;
+            resultX = intersection;
+          }
+        }
+      }
+    }
+
+    // if no minimum founded in feasible set among intersections
+    if(Double.isNaN(resultX)) {
+      // then try to exchange minimum by border values
+      for (Inequality inequality : allIneqs) {
+        double onLeft = inequality.computeFuncR2(leftBorder);
+        double onRight = inequality.computeFuncR2(rightBorder);
+        // firstly compare values on borders
+        // then compare winner with min
+        if (onLeft < onRight) {
+          if (onLeft < min) {
+            min = onLeft;
+            resultX = leftBorder;
+          }
+        } else {
+          if (onRight < min) {
+            min = onRight;
+            resultX = rightBorder;
+          }
+        }
+      }
+    }
+
+    return new Pair<>(resultX, min);
   }
 
   /**
@@ -24,7 +138,7 @@ public class Solver2D {
    * split by pairs and delete some inequalities for suitable and move nonSuitable from input array to output list parameter in runtime
    * @return array of intersections
    * */
-  public double[] getIntersections(Inequality[] inequalities, List<Inequality> nonSuitable, double leftBorder, double rightBorder) {
+  public double[] getIntersections(Inequality[] inequalities, Collection<Inequality> nonSuitable, double leftBorder, double rightBorder) {
     // create list for storing result intersections
     List<Double> intersections = new LinkedList<>();
     // stack for inequalities, used for splitting on pairs
@@ -50,7 +164,7 @@ public class Solver2D {
    *    if one of this two constraints not suitable for future finding (parallel ,of out of feasible x set), then
    *      drop this one, and another move to stack
    * */
-  protected Double testPair(Stack<Inequality> inequalityStack, List<Inequality> nonSuitableIneqs, double leftBorder, double rightBorder) {
+  protected Double testPair(Stack<Inequality> inequalityStack, Collection<Inequality> nonSuitableIneqs, double leftBorder, double rightBorder) {
     Inequality first = inequalityStack.pop();
     Inequality second = inequalityStack.pop();
 
@@ -232,7 +346,7 @@ public class Solver2D {
   /**
    * @param first - first inequality
    * @param second - second inequality
-   * @return intersection of this two
+   * @return X of intersection of this two
    * */
   protected double getIntersection(Inequality first, Inequality second) {
     return (second.getFree() - first.getFree()) / (first.getA() - second.getA());
@@ -443,7 +557,7 @@ public class Solver2D {
    * @return true, if optimum on the left from current state
    * */
   protected boolean isOptimumOnLeft(double leftBottomIncline) {
-    return Double.compare(leftBottomIncline, 0) < 0;
+    return Double.compare(leftBottomIncline, 0) > 0;
   }
 
   /**
@@ -463,5 +577,17 @@ public class Solver2D {
    * */
   protected boolean isOptimum(double leftBottomIncline, double rightBottomIncline) {
     return Double.compare(leftBottomIncline, 0) <=0 && Double.compare(rightBottomIncline, 0) >= 0;
+  }
+
+  protected Inequality[] removeFromArray(Inequality[] original, Collection<Inequality> toRemove) {
+    Inequality[] result = new Inequality[original.length - toRemove.size()];
+    int i = 0;
+    for(Inequality inequality : original) {
+      if( ! toRemove.contains(inequality) ) {
+        result[i] = inequality;
+        i++;
+      }
+    }
+    return result;
   }
 }

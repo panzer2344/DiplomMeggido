@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import solver.Solver2D;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -1048,7 +1049,7 @@ public class Solver2DTest {
 
   /**
    * isOptimumOnRight(lb):
-   * ex. isOptimumOnLeft(1)=false
+   * ex. isOptimumOnRight(1)=false
    * */
   @Test
   public void test90() {
@@ -1056,9 +1057,139 @@ public class Solver2DTest {
   }
 
   /**
+   * bruteForceSolve:
+   * ex.
+   * top = { y <= x + 1, y <= -x + 1 }
+   * bot = { y >= x - 1, y >= -x -1 }
+   * leftBorder = -0.5, rightBorder = 0.5
+   * bruteForceSolve(top, left, leftBorder, rightBorder) = { 0, -1 }
+   * */
+  @Test
+  public void test91() {
+    Inequality[] top = new Inequality[]{
+            new Inequality(new double[]{ 1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT)};
+    Inequality[] bottom = new Inequality[]{
+            new Inequality(new double[]{ 1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+    double leftBorder = -0.5;
+    double rightBorder = 0.5;
+
+    Pair<Double, Double> expected = new Pair<>(0.0, -1.0);
+    Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+
+    Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
+    Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
+  }
+
+  /**
+   * bruteForceSolve:
+   * ex.
+   * top = { y <= -2x + 2, y <= x + 3 }
+   * bot = { y >= -x + 1 }
+   * leftBorder = 0, rightBorder = 2
+   * bruteForceSolve(top, left, leftBorder, rightBorder) = { 1, 0 }
+   * */
+  @Test
+  public void test92() {
+    Inequality[] top = new Inequality[]{
+            new Inequality(new double[]{ -2, 2 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, 3 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT)};
+    Inequality[] bottom = new Inequality[]{
+            new Inequality(new double[]{ -1, 1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+    double leftBorder = 0;
+    double rightBorder = 2;
+
+    Pair<Double, Double> expected = new Pair<>(1.0, 0.0);
+    Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+
+    Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
+    Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
+  }
+
+  /**
+   * bruteForceSolve:
+   * ex.
+   * top = { y <= -2x + 2, y <= x + 3 }
+   * bot = { y >= -x + 1 }
+   * leftBorder = 0, rightBorder = 0.5
+   * bruteForceSolve(top, left, leftBorder, rightBorder) = { 0.5, 0.5 }
+   * */
+  @Test
+  public void test93() {
+    Inequality[] top = new Inequality[]{
+            new Inequality(new double[]{ -2, 2 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, 3 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT)};
+    Inequality[] bottom = new Inequality[]{
+            new Inequality(new double[]{ -1, 1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+    double leftBorder = 0;
+    double rightBorder = 0.5;
+
+    Pair<Double, Double> expected = new Pair<>(0.5, 0.5);
+    Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+
+    Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
+    Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
+  }
+
+  /**
+   * bruteForceSolve:
+   * ex.
+   * top = { y <= x + 1, y <= -x + 1 }
+   * bot = { y >= x - 1, y >= x - 2, y >= x - 3, y >= x - 4, y >= -x -1, y >= -x - 2, y >= -x - 3, y >= -x - 4 }
+   * leftBorder = -0.5, rightBorder = 0.5
+   * bruteForceSolve(top, left, leftBorder, rightBorder) = { 0, -1 }
+   * */
+  @Test
+  public void test94() {
+    //Inequality[] top = new Inequality[]{
+    //        new Inequality(new double[]{ 1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ -1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT)};
+    //Inequality[] bottom = new Inequality[]{
+    //        new Inequality(new double[]{ 1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ 1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ 1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ 1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ -1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)/*,
+    //        new Inequality(new double[]{ -1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ -1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+    //        new Inequality(new double[]{ -1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)*/};
+    //double leftBorder = -0.5;
+    //double rightBorder = 0.5;
+    //
+    //Pair<Double, Double> expected = new Pair<>(0.0, -1.0);
+    //Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+    //
+    //Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
+    //Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
+
+  }
+
+  /**
    * mock for tests extends from original solver. transform all protected methods to public
    * */
   private static class Solver2DForTest extends Solver2D {
+
+    @Override
+    public Pair<Double, Double> solve(Inequality[] inequalities) {
+      return super.solve(inequalities);
+    }
+
+    @Override
+    protected Inequality[] removeFromArray(Inequality[] original, Collection<Inequality> toRemove) {
+      return super.removeFromArray(original, toRemove);
+    }
+
+    @Override
+    protected Pair<Double, Double> recursiveSolve() {
+      return super.recursiveSolve();
+    }
+
+    @Override
+    protected Pair<Double, Double> bruteForceSolve(Inequality[] top, Inequality[] bot, double leftBorder, double rightBorder) {
+      return super.bruteForceSolve(top, bot, leftBorder, rightBorder);
+    }
+
     @Override
     protected double getMaxFunctionFeasibleValue(double x, Inequality[] topIneqs) {
       return super.getMaxFunctionFeasibleValue(x, topIneqs);
@@ -1095,12 +1226,12 @@ public class Solver2DTest {
     }
 
     @Override
-    public double[] getIntersections(Inequality[] inequalities, List<Inequality> nonSuitable, double leftBorder, double rightBorder) {
+    public double[] getIntersections(Inequality[] inequalities, Collection<Inequality> nonSuitable, double leftBorder, double rightBorder) {
       return super.getIntersections(inequalities, nonSuitable, leftBorder, rightBorder);
     }
 
     @Override
-    protected Double testPair(Stack<Inequality> inequalityStack, List<Inequality> nonSuitableIneqs, double leftBorder, double rightBorder) {
+    protected Double testPair(Stack<Inequality> inequalityStack, Collection<Inequality> nonSuitableIneqs, double leftBorder, double rightBorder) {
       return super.testPair(inequalityStack, nonSuitableIneqs, leftBorder, rightBorder);
     }
 
