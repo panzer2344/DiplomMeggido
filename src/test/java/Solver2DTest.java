@@ -847,6 +847,217 @@ public class Solver2DTest {
     Assert.assertFalse(solver.isFeasible(0, bottomInequalities, topInequalities));
   }
 
+  /**
+   * isFeasibleOnLeft:
+   * ex. isFeasibleOnLeft(1, -1)=true ~ isFeasibleOnLeft( x=1, ineqs={ y >= x + 2, y <= -x + 2 }) = true
+   * */
+  @Test
+  public void test70() {
+    Assert.assertTrue(solver.isFeasibleOnLeft(1, -1));
+  }
+
+  /**
+   * isFeasibleOnLeft:
+   * ex. isFeasibleOnLeft( x=1, ineqs={ y >= x + 2, y <= -x + 2 }) = true ~ isFeasibleOnLeft(1, -1)=true
+   * */
+  @Test
+  public void test71() {
+    Inequality[] inequalities = new Inequality[]{
+            new Inequality(new double[]{ 1, 2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, 2 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT)};
+    double leftBottomIncline = solver.getLeftBottomIncline(new Pair<>(inequalities[0], inequalities[0]));
+    double leftTopIncline = solver.getLeftTopIncline(new Pair<>(inequalities[1], inequalities[1]));
+    Assert.assertTrue(solver.isFeasibleOnLeft(leftBottomIncline, leftTopIncline));
+  }
+
+  /**
+   * isFeasibleOnRight:
+   * ex. isFeasibleOnRight(-1, 1)=true ~ isFeasibleOnRight( x=1, ineqs={ y <= x + 2, y >= -x + 2 }) = true
+   * */
+  @Test
+  public void test72() {
+    Assert.assertTrue(solver.isFeasibleOnRight(-1, 1));
+  }
+
+  /**
+   * isFeasibleOnRight:
+   * ex. isFeasibleOnRight( x=1, ineqs={ y <= x + 2, y >= -x + 2 }) = true ~ isFeasibleOnRight(-1, 1)=true
+   * */
+  @Test
+  public void test73() {
+    Inequality[] inequalities = new Inequality[]{
+            new Inequality(new double[]{ 1, 2 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, 2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+    double rightBottomIncline = solver.getRightBottomIncline(new Pair<>(inequalities[1], inequalities[1]));
+    double rightTopIncline = solver.getRightTopIncline(new Pair<>(inequalities[0], inequalities[0]));
+    Assert.assertTrue(solver.isFeasibleOnRight(rightBottomIncline, rightTopIncline));
+  }
+
+  /**
+   * isUnsolvable(lb, rb, lt, rt) -> should: lb <= rt, lt <= rb
+   * ex. isUnsolvable( -1, 1, -1, 1) = true
+   * */
+  @Test
+  public void test74() {
+    Assert.assertTrue(solver.isUnsolvable(-1, 1, -1, 1));
+  }
+
+  /**
+   * isUnsolvable(lb, rb, lt, rt)
+   * ex. isUnsolvable( -1, -1.5, -1, 1) = false
+   * */
+  @Test
+  public void test75() {
+    Assert.assertFalse(solver.isUnsolvable(-1, -1.5, -1, 1));
+  }
+
+  /**
+   * isUnsolvable(lb, rb, lt, rt)
+   * ex. isUnsolvable( 1.5, 1, -1, 1) = false
+   * */
+  @Test
+  public void test76() {
+    Assert.assertFalse(solver.isUnsolvable(1.5, 1, -1, 1));
+  }
+
+  /**
+   * isUnsolvable(lb, rb, lt, rt)
+   * ex. isUnsolvable( -1, 1, -1, -1.5) = false
+   * */
+  @Test
+  public void test77() {
+    Assert.assertFalse(solver.isUnsolvable(-1, 1, -1, -1.5));
+  }
+
+  /**
+   * isUnsolvable(lb, rb, lt, rt)
+   * ex. isUnsolvable( -1, 1, 1.5, 1) = false
+   * */
+  @Test
+  public void test78() {
+    Assert.assertFalse(solver.isUnsolvable(-1, 1, 1.5, 1));
+  }
+
+  /**
+   * isUnsolvable:
+   * ex.
+   * Ineqs = { y <= x - 5, y <= -x -5, y >= x + 5, y >= -x + 5 }
+   * x = 0
+   * lb = -1, rb = 1, lt = 1, rt = -1
+   * isUnsolvable = true
+   * */
+  @Test
+  public void test79() {
+    Inequality[] inequalities = new Inequality[]{
+            new Inequality(new double[]{ 1, -5 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -5 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, 5 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, 5 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+    Pair<Inequality, Inequality> botPair = new Pair<>(inequalities[2], inequalities[3]);
+    Pair<Inequality, Inequality> topPair = new Pair<>(inequalities[0], inequalities[1]);
+
+    double leftBottomIncline = solver.getLeftBottomIncline(botPair);
+    double rightBottomIncline = solver.getRightBottomIncline(botPair);
+    double leftTopIncline = solver.getLeftTopIncline(topPair);
+    double rightTopIncline = solver.getRightTopIncline(topPair);
+
+    Assert.assertFalse(solver.isFeasible(0, botPair, topPair));
+    Assert.assertTrue(solver.isUnsolvable(leftBottomIncline, rightBottomIncline, leftTopIncline, rightTopIncline));
+  }
+
+  /**
+   * isOptimum(lb, rb):
+   * ex. isOptimum(leftBottomIncline=-1, rightBottomIncline=1) = true
+   * */
+  @Test
+  public void test81() {
+    Assert.assertTrue(solver.isOptimum(-1, 1));
+  }
+
+  /**
+   * isOptimum(lb, rb)
+   * ex. isOptimum(leftBottomIncline=0, rightBottomIncline=1) = true
+   * */
+  @Test
+  public void test82() {
+    Assert.assertTrue(solver.isOptimum(0, 1));
+  }
+
+  /**
+   * isOptimum(lb, rb)
+   * ex. isOptimum(leftBottomIncline=-1, rightBottomIncline=0) = true
+   * */
+  @Test
+  public void test83() {
+    Assert.assertTrue(solver.isOptimum(-1, 0));
+  }
+
+  /**
+   * isOptimum(lb, rb)
+   * ex. isOptimum(leftBottomIncline=0, rightBottomIncline=0)=true
+   * */
+  @Test
+  public void test84() {
+    Assert.assertTrue(solver.isOptimum(0, 0));
+  }
+
+  /**
+   * isOptimum(lb, rb)
+   * ex. isOptimum(leftBottomIncline=1, rightBottomIncline=1.5)=false
+   * */
+  @Test
+  public void test85() {
+    Assert.assertFalse(solver.isOptimum(1, 1.5));
+  }
+
+  /**
+   * isOptimum(lb, rb)
+   * ex. isOptimum(leftBottomIncline=-1.5, rightBottomIncline=-1)=false
+   * */
+  @Test
+  public void test86() {
+    Assert.assertFalse(solver.isOptimum(-1.5, -1));
+  }
+
+  /**
+   * isOptimumOnLeft(lb):
+   * ex. isOptimumOnLeft(1)=true
+   * */
+  @Test
+  public void test87() {
+    Assert.assertTrue(solver.isOptimumOnLeft(1));
+  }
+
+  /**
+   * isOptimumOnLeft(lb):
+   * ex. isOptimumOnLeft(-1)=false
+   * */
+  @Test
+  public void test88() {
+    Assert.assertFalse(solver.isOptimumOnLeft(-1));
+  }
+
+  /**
+   * isOptimumOnRight(rb):
+   * ex. isOptimumOnRight(-1)=true
+   * */
+  @Test
+  public void test89() {
+    Assert.assertTrue(solver.isOptimumOnRight(-1));
+  }
+
+  /**
+   * isOptimumOnRight(lb):
+   * ex. isOptimumOnLeft(1)=false
+   * */
+  @Test
+  public void test90() {
+    Assert.assertFalse(solver.isOptimumOnRight(1));
+  }
+
+  /**
+   * mock for tests extends from original solver. transform all protected methods to public
+   * */
   private static class Solver2DForTest extends Solver2D {
     @Override
     protected double getMaxFunctionFeasibleValue(double x, Inequality[] topIneqs) {
@@ -996,6 +1207,36 @@ public class Solver2DTest {
     @Override
     protected boolean isFeasible(double minFuncFeasibleValue, double maxFuncFeasibleValue) {
       return super.isFeasible(minFuncFeasibleValue, maxFuncFeasibleValue);
+    }
+
+    @Override
+    protected boolean isFeasibleOnLeft(double leftBottomIncline, double leftTopIncline) {
+      return super.isFeasibleOnLeft(leftBottomIncline, leftTopIncline);
+    }
+
+    @Override
+    protected boolean isFeasibleOnRight(double rightBottomIncline, double rightTopIncline) {
+      return super.isFeasibleOnRight(rightBottomIncline, rightTopIncline);
+    }
+
+    @Override
+    protected boolean isUnsolvable(double leftBottomIncline, double rightBottomIncline, double leftTopIncline, double rightTopIncline) {
+      return super.isUnsolvable(leftBottomIncline, rightBottomIncline, leftTopIncline, rightTopIncline);
+    }
+
+    @Override
+    protected boolean isOptimumOnLeft(double leftBottomIncline) {
+      return super.isOptimumOnLeft(leftBottomIncline);
+    }
+
+    @Override
+    protected boolean isOptimumOnRight(double rightBottomIncline) {
+      return super.isOptimumOnRight(rightBottomIncline);
+    }
+
+    @Override
+    protected boolean isOptimum(double leftBottomIncline, double rightBottomIncline) {
+      return super.isOptimum(leftBottomIncline, rightBottomIncline);
     }
   }
 

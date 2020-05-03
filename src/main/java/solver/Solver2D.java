@@ -405,16 +405,63 @@ public class Solver2D {
     return new Pair<>(first, second);
   }
 
+  /**
+   * use only for X not included to feasible set
+   * @param leftBottomIncline - left incline in intersection of bottom border and X = x
+   * @param leftTopIncline - left incline in intersection of top border and X = x
+   * @return true if feasible set is on the left from current state
+   * */
   protected boolean isFeasibleOnLeft(double leftBottomIncline, double leftTopIncline) {
     return Double.compare(leftBottomIncline, leftTopIncline) > 0;
   }
 
+  /**
+   * use only for X not included to feasible set
+   * @param rightBottomIncline - right incline in intersection of bottom border and X = x
+   * @param rightTopIncline - right incline in intersection of top border and X = x
+   * @return true if feasible set is on the right from current state
+   * */
   protected boolean isFeasibleOnRight(double rightBottomIncline, double rightTopIncline) {
     return Double.compare(rightBottomIncline, rightTopIncline) < 0;
   }
 
+  /**
+   * use only for X not included to feasible set
+   * @param leftBottomIncline - left incline in intersection of bottom border and X = x
+   * @param rightBottomIncline - right incline in intersection of bottom border and X = x
+   * @param leftTopIncline - left incline in intersection of top border and X = x
+   * @param rightTopIncline - right incline in intersection of top border and X = x
+   * @return true, if this lp task doesn't have a solution
+   * */
   protected boolean isUnsolvable(double leftBottomIncline, double rightBottomIncline, double leftTopIncline, double rightTopIncline) {
     return Double.compare(leftBottomIncline, rightTopIncline) <= 0 && Double.compare(leftTopIncline, rightBottomIncline) <= 0;
   }
 
+  /**
+   * use only for X included into feasible set
+   * @param leftBottomIncline - left incline in intersection of bottom border and X = x
+   * @return true, if optimum on the left from current state
+   * */
+  protected boolean isOptimumOnLeft(double leftBottomIncline) {
+    return Double.compare(leftBottomIncline, 0) < 0;
+  }
+
+  /**
+   * use only for X included into feasible set
+   * @param rightBottomIncline - left incline in intersection of bottom border and X = x
+   * @return true, if optimum on the right from current state
+   * */
+  protected boolean isOptimumOnRight(double rightBottomIncline) {
+    return Double.compare(rightBottomIncline, 0) < 0;
+  }
+
+  /**
+   * simple condition on is current state optimum
+   * @param leftBottomIncline - left incline in intersection of bottom border and X = x
+   * @param rightBottomIncline - right incline in intersection of bottom border and X = x
+   * @return true, is current state is optimum
+   * */
+  protected boolean isOptimum(double leftBottomIncline, double rightBottomIncline) {
+    return Double.compare(leftBottomIncline, 0) <=0 && Double.compare(rightBottomIncline, 0) >= 0;
+  }
 }
