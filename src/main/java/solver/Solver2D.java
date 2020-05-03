@@ -6,6 +6,7 @@ import org.javatuples.Pair;
 import solver.splitter.Splitter2D;
 
 import java.util.*;
+import java.util.zip.DeflaterOutputStream;
 
 import static model.Inequality.Sign.*;
 
@@ -17,6 +18,8 @@ public class Solver2D {
   private Inequality[] bot = null;
   private double leftBorder = Double.NEGATIVE_INFINITY;
   private double rightBorder = Double.POSITIVE_INFINITY;
+
+  private final double EPSILON = Math.pow(10, -15);
 
   public Solver2D() {}
 
@@ -58,9 +61,9 @@ public class Solver2D {
         return new Pair<>(median, y);
       } else {
         if (isOptimumOnLeft(leftBottomIncline)) {
-            rightBorder = median;
+            rightBorder = median - EPSILON;
         } else if (isOptimumOnRight(rightBottomIncline)) {
-            leftBorder = median;
+            leftBorder = median + EPSILON;
         }
       }
     } /* else {
@@ -212,19 +215,24 @@ public class Solver2D {
    * @param leftBorder
    * @param rightBorder
    * @return constraint, which become not suitable after test on feasibility of intersection of lines, or null if all is suitable
-   * if intersection is left to the left border, then we need to delete constraint with greater A coeff,
-   * else if intersection is right to the right border, then we need to delete constraint with lower A coeff
-   * ex. test({ y >= x + 3.0 , y >= -x - 1 }) => notSuitable = { y >= x + 3.0 }
+   * if intersection is left to the left border, then we need to delete constraint with lower A coeff,
+   * else if intersection is right to the right border, then we need to delete constraint with greater A coeff
+   * ex. test({ y >= x + 3.0 , y >= -x - 1 }) => notSuitable = { y >= -x - 1 }
    * */
   protected Inequality getNonSuitableOnFeasibility(Inequality first, Inequality second, double leftBorder, double rightBorder) {
     if(first == null || second == null) throw new IllegalArgumentException();
 
-    if(isTopConstraint(first) && isBottomConstraint(second)) throw new IllegalArgumentException();
-    if(isBottomConstraint(first) && isTopConstraint(second)) throw new IllegalArgumentException();
+    //if(isTopConstraint(first) && isBottomConstraint(second)) throw new IllegalArgumentException();
+    //if(isBottomConstraint(first) && isTopConstraint(second)) throw new IllegalArgumentException();
+
+    if(isTopConstraint(first) || isTopConstraint(second)) throw new IllegalArgumentException();
 
     double intersection = getIntersection(first, second);
-    if(intersection > rightBorder) return getWithSmallerIncline(first, second);
-    if(intersection < leftBorder) return getWithGreaterIncline(first, second);
+    //if(intersection > rightBorder) return getWithSmallerIncline(first, second);
+    //if(intersection < leftBorder) return getWithGreaterIncline(first, second);
+    if (intersection > rightBorder) return getWithGreaterIncline(first, second);
+    if (intersection < leftBorder) return getWithSmallerIncline(first, second);
+
     return null;
   }
 

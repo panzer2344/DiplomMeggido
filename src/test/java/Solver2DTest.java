@@ -4,10 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import solver.Solver2D;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 import static model.Inequality.Sign.*;
 import static model.Inequality.ZERO_CONSTRAINT;
@@ -332,33 +329,33 @@ public class Solver2DTest {
   }
 
   /**
-   * getNonSuitableOnFeasibility: ex. getNonSuitableOnFeasibility({ y <= x + 3, y <= -x - 1 }, left = -1, right = +inf)
-   *  = { y >= x + 3 }
+   * getNonSuitableOnFeasibility: ex. getNonSuitableOnFeasibility({ y >= x + 3, y >= -x - 1 }, left = -1, right = +inf)
+   *  = { y >= -x - 1 }
    * */
   @Test
   public void test35() {
-    Inequality first = new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
-    Inequality second = new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality first = new Inequality(new double[]{ 1, 3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{ -1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
 
     double left = -1;
     double right = Double.POSITIVE_INFINITY;
 
-    Assert.assertEquals(first, solver.getNonSuitableOnFeasibility(first, second, left, right));
+    Assert.assertEquals(second, solver.getNonSuitableOnFeasibility(first, second, left, right));
   }
 
   /**
    * getNonSuitableOnFeasibility: ex. getNonSuitableOnFeasibility({ y >= -x + 3, y >= x - 1 }, left = -inf, right = 1)
-   *  = { y >= x + 3 }
+   *  = { y >= x - 1 }
    * */
   @Test
   public void test36() {
-    Inequality first = new Inequality(new double[]{-1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
-    Inequality second = new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality first = new Inequality(new double[]{ -1, 3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
+    Inequality second = new Inequality(new double[]{ 1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT);
 
     double left = Double.NEGATIVE_INFINITY;
     double right = 1;
 
-    Assert.assertEquals(first, solver.getNonSuitableOnFeasibility(first, second, left, right));
+    Assert.assertEquals(second, solver.getNonSuitableOnFeasibility(first, second, left, right));
   }
 
   /**
@@ -419,7 +416,7 @@ public class Solver2DTest {
   }
 
   /**
-   * testPair: ex. testPair({ y >= x + 3, y >= -x - 1 }, left = -1, right = +inf) = null, stack={ y >= -x -1 }
+   * testPair: ex. testPair({ y >= x + 3, y >= -x - 1 }, left = -1, right = +inf) = null, stack={ y >= x + 3 }
    * */
   @Test
   public void test41() {
@@ -438,10 +435,10 @@ public class Solver2DTest {
     Double actualIntersection = solver.testPair(inequalityStack, nonSuitable, left, right);
 
     Stack<Inequality> expectedStack = new Stack<>();
-    expectedStack.push(second);
+    expectedStack.push(first);
 
     List<Inequality> nonSuitableExpected = new LinkedList<>();
-    nonSuitableExpected.add(first);
+    nonSuitableExpected.add(second);
 
     Assert.assertNull(actualIntersection);
     Assert.assertFalse(inequalityStack.empty());
@@ -481,13 +478,13 @@ public class Solver2DTest {
   }
 
   /**
-   * getIntersections: ex. getIntersections({ y >= x - 3, y >= -x - 1, y >= x - 1, y >= x + 3 }, left = -1.5, right = +inf)
-   *  = { 1 }, nonSuitable = { y >= x + 3, y >= x - 1 }
+   * getIntersections: ex. getIntersections({ y >= -x + 5, y >= -x - 1, y >= x - 1, y >= x + 3 }, left = -1.5, right = +inf)
+   *  = { 1 }, nonSuitable = { y >= x - 1, y >= -x - 1 }
    * */
   @Test
   public void test43() {
     Inequality[] inequalities = new Inequality[] {
-            new Inequality(new double[]{1, -3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{-1, 5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
             new Inequality(new double[]{-1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
             new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
             new Inequality(new double[]{1, 3}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
@@ -495,14 +492,14 @@ public class Solver2DTest {
     double leftBorder = -1.5;
     double rightBorder = Double.POSITIVE_INFINITY;
 
-    List<Inequality> nonSuitable = new LinkedList<>();
+    Set<Inequality> nonSuitable = new HashSet<>();
 
     double[] actualIntersections = solver.getIntersections(inequalities, nonSuitable, leftBorder, rightBorder);
     double[] expectedIntersections = new double[]{ 1 };
 
-    List<Inequality> nonSuitableExpected = new LinkedList<>();
+    Set<Inequality> nonSuitableExpected = new HashSet<>();
+    nonSuitableExpected.add(inequalities[1]);
     nonSuitableExpected.add(inequalities[2]);
-    nonSuitableExpected.add(inequalities[3]);
 
     Assert.assertNotNull(actualIntersections);
     Assert.assertFalse(nonSuitable.isEmpty());
@@ -1142,27 +1139,50 @@ public class Solver2DTest {
    * */
   @Test
   public void test94() {
-    //Inequality[] top = new Inequality[]{
-    //        new Inequality(new double[]{ 1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ -1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT)};
-    //Inequality[] bottom = new Inequality[]{
-    //        new Inequality(new double[]{ 1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ 1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ 1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ 1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ -1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)/*,
-    //        new Inequality(new double[]{ -1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ -1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
-    //        new Inequality(new double[]{ -1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)*/};
-    //double leftBorder = -0.5;
-    //double rightBorder = 0.5;
-    //
-    //Pair<Double, Double> expected = new Pair<>(0.0, -1.0);
-    //Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
-    //
-    //Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
-    //Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
+    Inequality[] inequalities = new Inequality[]{
+            // top
+            new Inequality(new double[]{ 1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, 1 }, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+            // bot
+            new Inequality(new double[]{ 1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            // zero
+            new Inequality(new double[]{ 1, 0.5 }, LESS_OR_EQUAL, ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -0.5 }, GREAT_OR_EQUAL, ZERO_CONSTRAINT)};
 
+    Pair<Double, Double> expected = new Pair<>(0.0, -1.0);
+    Pair<Double, Double> actual = solver.solve(inequalities);
+
+    Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
+    Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
+  }
+
+  @Test
+  public void test95() {
+    Inequality[] botIneqs = new Inequality[]{
+            new Inequality(new double[]{ 1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ 1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -1 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -2 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -3 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+            new Inequality(new double[]{ -1, -4 }, GREAT_OR_EQUAL, !ZERO_CONSTRAINT)};
+    double leftBorder = -0.25;
+    double rightBorder = 0.25;
+
+    Set<Inequality> expectedNonSuitable = new HashSet<>(Arrays.asList(botIneqs[1], botIneqs[2], botIneqs[3], botIneqs[5], botIneqs[6], botIneqs[7]));
+
+    Set<Inequality> nonSuitable = new HashSet<>();
+    solver.getIntersections(botIneqs, nonSuitable, leftBorder, rightBorder);
+
+    Assert.assertEquals(expectedNonSuitable, nonSuitable);
   }
 
   /**
