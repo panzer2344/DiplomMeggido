@@ -6,7 +6,6 @@ import org.javatuples.Pair;
 import solver.splitter.Splitter2D;
 
 import java.util.*;
-import java.util.zip.DeflaterOutputStream;
 
 import static model.Inequality.Sign.*;
 
@@ -35,12 +34,20 @@ public class Solver2D {
     return recursiveSolve();
   }
 
+  // updated[17.05.2020] : added dropping top inequalities actions
+  /*** TODO : need to test this action, and write some more integration tests for all R^2 algo */
   protected Pair<Double, Double> recursiveSolve() {
     if(bot.length <= 1) return bruteForceSolve(top, bot, leftBorder, rightBorder);
 
     Set<Inequality> nonSuitable = new HashSet<>();
-    double[] intersections = getIntersections(bot, nonSuitable, leftBorder, rightBorder);
+    double[] botIntersections = getIntersections(bot, nonSuitable, leftBorder, rightBorder);
     bot = removeFromArray(bot, nonSuitable);
+
+    nonSuitable.clear();
+    double[] topIntersections = getIntersections(top, nonSuitable, leftBorder, rightBorder);
+    top = removeFromArray(top, nonSuitable);
+
+    double[] intersections = mergeArrays(botIntersections, topIntersections);
 
     double median = medianFinder.find(intersections);
 
@@ -52,8 +59,8 @@ public class Solver2D {
 
     double leftBottomIncline = getLeftBottomIncline(bottomIneqsAtX);
     double rightBottomIncline = getRightBottomIncline(bottomIneqsAtX);
-    double leftTopIncline = getLeftTopIncline(topIneqsAtX);
-    double rightTopInline = getRightTopIncline(topIneqsAtX);
+    //double leftTopIncline = getLeftTopIncline(topIneqsAtX);
+    //double rightTopInline = getRightTopIncline(topIneqsAtX);
 
     if (isFeasible(minFuncFeasibleValue, maxFuncFeasibleValue)) {
       if (isOptimum(leftBottomIncline, rightBottomIncline)) {
@@ -222,16 +229,20 @@ public class Solver2D {
   protected Inequality getNonSuitableOnFeasibility(Inequality first, Inequality second, double leftBorder, double rightBorder) {
     if(first == null || second == null) throw new IllegalArgumentException();
 
-    //if(isTopConstraint(first) && isBottomConstraint(second)) throw new IllegalArgumentException();
-    //if(isBottomConstraint(first) && isTopConstraint(second)) throw new IllegalArgumentException();
-
-    if(isTopConstraint(first) || isTopConstraint(second)) throw new IllegalArgumentException();
+    if(isTopConstraint(first) && isBottomConstraint(second)) throw new IllegalArgumentException();
+    if(isBottomConstraint(first) && isTopConstraint(second)) throw new IllegalArgumentException();
 
     double intersection = getIntersection(first, second);
-    //if(intersection > rightBorder) return getWithSmallerIncline(first, second);
-    //if(intersection < leftBorder) return getWithGreaterIncline(first, second);
-    if (intersection > rightBorder) return getWithGreaterIncline(first, second);
-    if (intersection < leftBorder) return getWithSmallerIncline(first, second);
+
+    // updated[17.05.2020] : added checking on suitable on feasibility for TOP ineqs
+    // todo: need to test this adding
+    if(isTopConstraint(first)) {
+      if(intersection > rightBorder) return getWithSmallerIncline(first, second);
+      if(intersection < leftBorder) return getWithGreaterIncline(first, second);
+    } else if(isBottomConstraint(second)) {
+      if(intersection > rightBorder) return getWithGreaterIncline(first, second);
+      if(intersection < leftBorder) return getWithSmallerIncline(first, second);
+    }
 
     return null;
   }
@@ -597,5 +608,12 @@ public class Solver2D {
       }
     }
     return result;
+  }
+
+  protected double[] mergeArrays(double[] first, double[] second) {
+    double[] merged = new double[first.length + second.length];
+    System.arraycopy(first, 0, merged, 0, first.length);
+    System.arraycopy(second, 0, merged, first.length, second.length);
+    return merged;
   }
 }

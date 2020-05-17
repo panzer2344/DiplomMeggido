@@ -37,7 +37,7 @@ public class MedianFinder {
     if (pivotIndex == ordinal) {
       return pivot;
     } else if (pivotIndex < ordinal) {
-      return _find(greaterThanPivot, ordinal - pivotIndex - 1);
+      return _find(greaterThanPivot, ordinal - pivotIndex);
     } else {
       return _find(lowThanPivot, ordinal);
     }
@@ -75,7 +75,7 @@ public class MedianFinder {
   }
 
   private double[] getGreaterThanPivot(double[] input, double pivot) {
-    return Arrays.stream(input).filter(element -> Double.compare(element, pivot) > 0).toArray();
+    return Arrays.stream(input).filter(element -> Double.compare(element, pivot) >= 0).toArray();
   }
 
 }
