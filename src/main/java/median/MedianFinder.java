@@ -29,8 +29,11 @@ public class MedianFinder {
     double[] lowThanPivot = getLowThanPivot(input, pivot);
     double[] greaterThanPivot = getGreaterThanPivot(input, pivot);
 
-    lowThanPivot = lowThanPivot != null ? lowThanPivot : new double[0];
-    greaterThanPivot = greaterThanPivot != null ? greaterThanPivot : new double[0];
+    if (lowThanPivot == null || lowThanPivot.length == 0) {
+      return greaterThanPivot[ordinal];
+    } else if(greaterThanPivot == null || greaterThanPivot.length == 0) {
+      return lowThanPivot[ordinal];
+    }
 
     int pivotIndex = lowThanPivot.length;
 

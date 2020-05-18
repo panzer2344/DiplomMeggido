@@ -12,11 +12,11 @@ public class LPTask {
     public double[] B;
     public double[] C;
 
-    public LPTask(double a, double b, double[] a1, double[] b1, double[] c) {
+    public LPTask(double a, double b, double[] A, double[] B, double[] C) {
         this.a = a;
         this.b = b;
-        A = a1;
-        B = b1;
-        C = c;
+        this.A = A;
+        this.B = B;
+        this.C = C;
     }
 }

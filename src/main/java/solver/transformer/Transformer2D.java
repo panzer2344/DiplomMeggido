@@ -16,8 +16,9 @@ public class Transformer2D {
     /**
      * transform LPTask like: min(ax+b), if a_i * x + b_i * x + c_i <= 0, i in {1,...,N}
      * to min y, if Y >= ( <= / > / <) sigma_i * X + gamma_i ( 0 >= ( <= / > / < ) alpha_i * x + c_i )
+     * @param lpTask LPTask to transform
+     * @return array of inequalities from LPTask in form above
      * */
-    // todo: add more in description
     // todo: add tests for this method
     public Inequality[] transform(LPTask lpTask) {
         if(lpTask.A.length != lpTask.B.length || lpTask.B.length != lpTask.C.length)
@@ -27,8 +28,14 @@ public class Transformer2D {
         return inequalities;
     }
 
-    // todo: make description(javaDoc);
     // todo: add tests for this method
+    /**
+     * transform inequality with index=indexOfIneq in LPTask
+     * from ax + by + c <= 0 to Y <= sigma X + gamma
+     * @param lpTask LP task to transform
+     * @param indexOfIneq index of inequality in LPTask
+     * @return inequality in form Y <= sigma X + gamma ( LPTask.criterion = min Y )
+     * */
     public Inequality transform(LPTask lpTask, int indexOfIneq){
         double a = lpTask.a;
         double b = lpTask.b;
@@ -42,7 +49,7 @@ public class Transformer2D {
         double beta = b_i / b;
         double alpha = a_i - a * beta;
 
-        if(Double.compare(beta, 0) == 0) return new Inequality(new double[]{a_i, c_i}, LESS_OR_EQUAL, ZERO_CONSTRAINT);
+        if(Double.compare(beta, 0) == 0) return new Inequality(new double[]{a_i, c_i}, GREAT_OR_EQUAL, ZERO_CONSTRAINT);
 
         double sigma = -alpha / beta;
         double gamma = -c_i / beta;
