@@ -34,13 +34,13 @@ public class Transformer2DTest {
         checkIneqsOnEqual(expected, actual);
     }
 
-    private void checkIneqsOnEqual(Inequality[] expected, Inequality[] actual) {
+    public static void checkIneqsOnEqual(Inequality[] expected, Inequality[] actual) {
         Assert.assertEquals(expected.length, actual.length);
 
         for(int i = 0; i < expected.length; i++) {
-            Assert.assertArrayEquals(expected[i].getCoeffs(), actual[i].getCoeffs(), 0.000001);
-            Assert.assertEquals(expected[i].getA(), actual[i].getA(), 0.0000001);
-            Assert.assertEquals(expected[i].getSign(), actual[i].getSign());
+            Assert.assertArrayEquals("At " + i , expected[i].getCoeffs(), actual[i].getCoeffs(), 0.000001);
+            Assert.assertEquals("At " + i , expected[i].getA(), actual[i].getA(), 0.0000001);
+            Assert.assertEquals("At " + i , expected[i].getSign(), actual[i].getSign());
         }
     }
 
