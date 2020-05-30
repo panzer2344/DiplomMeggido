@@ -1,8 +1,11 @@
 package data.reader;
 
+import com.sun.xml.internal.ws.util.StringUtils;
 import model.Inequality;
+import model.LPTask;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -114,6 +117,79 @@ public class DataReader {
           .reduce((before, next) -> before + lineSeparator + next)
           .orElse("");
       return readFromStrFunction.apply(lines);
+  }
+
+  public String readStringFromClasspath(String filename) throws URISyntaxException, IOException {
+    return Files.readAllLines(
+            Paths.get(this.getClass()
+                    .getClassLoader()
+                    .getResource(filename).toURI()))
+            .stream()
+            .reduce((s1, s2) -> s1 + "\n" + s2)
+            .orElse("");
+  }
+
+  /**
+   * LPTask looks like:
+   * min( ax + by )
+   * {
+   *     a_i * x + b_i  * y + c_i <= 0
+   * }
+   * */
+  public LPTask readLPTask(String testData) {
+    String[] lines = testData.split(lineSeparator);
+    String taskLine = lines[0];
+
+    double a;
+    double b;
+    double A[] = new double[lines.length - 1];
+    double B[] = new double[lines.length - 1];
+    double C[] = new double[lines.length - 1];
+
+    // min ( +- a * x +- b * y ) . group 1 -> +- group 2 -> a group 3 -> +- group 4 -> b
+    final Pattern taskLinePattern = Pattern.compile("^\\s*min\\s*\\(\\s*(\\-|\\+)?\\s*(\\d)\\s*\\*\\s*x\\s*(\\-|\\+)?\\s*(\\d)\\s*\\*\\s*y\\s*\\)\\s*$");
+    // +- a * x +- b * y +- c <= 0 . group 2 -> +- group 3 -> a group 5 -> +- group 6 -> b group 8 -> +- group 9 -> c
+    final Pattern ineqPattern = Pattern.compile("^(\\s*(\\+|\\-)?\\s*(\\d)\\s*\\*\\s*x\\s*)?((\\-|\\+)?\\s*(\\d)\\s*\\*\\s*y\\s*)?((\\-|\\+)?\\s*(\\d)\\s*)?<=\\s*0$");
+
+    Matcher taskLineMatcher = taskLinePattern.matcher(taskLine);
+    if (taskLineMatcher.find()) {
+      String aSign = taskLineMatcher.group(1);
+      String aString = taskLineMatcher.group(2);
+      String bSign = taskLineMatcher.group(3);
+      String bString = taskLineMatcher.group(4);
+
+      int aSignValue = aSign != null && "-".equals(aSign.trim()) ? -1 : 1;
+      int bSignValue = bSign != null && "-".equals(bSign.trim()) ? -1 : 1;
+
+      a = aString != null ? Double.parseDouble(aString.trim()) * aSignValue : 0;
+      b = bString != null ? Double.parseDouble(bString.trim()) * bSignValue : 0;
+    } else {
+      throw new IllegalArgumentException();
+    }
+
+    for(int i = 1; i < lines.length; i++) {
+      String ineqLine = lines[i];
+      Matcher ineqMatcher = ineqPattern.matcher(ineqLine);
+
+      if(!ineqMatcher.find()) throw new IllegalArgumentException();
+
+      String aSign = ineqMatcher.group(2);
+      String aString = ineqMatcher.group(3);
+      String bSign = ineqMatcher.group(5);
+      String bString = ineqMatcher.group(6);
+      String cSign = ineqMatcher.group(8);
+      String cString = ineqMatcher.group(9);
+
+      int aSignValue = aSign != null && "-".equals(aSign.trim()) ? -1 : 1;
+      int bSignValue = bSign != null && "-".equals(bSign.trim()) ? -1 : 1;
+      int cSignValue = cSign != null && "-".equals(cSign.trim()) ? -1 : 1;
+
+      A[i - 1] = aString != null ? Double.parseDouble(aString.trim()) * aSignValue : 0;
+      B[i - 1] = bString != null ? Double.parseDouble(bString.trim()) * bSignValue : 0;
+      C[i - 1] = cString != null ? Double.parseDouble(cString.trim()) * cSignValue : 0;
+    }
+
+    return new LPTask(a, b, A, B, C);
   }
 
 }

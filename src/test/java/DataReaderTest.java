@@ -1,13 +1,17 @@
 import data.reader.DataReader;
 import model.Inequality;
+import model.LPTask;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -126,6 +130,52 @@ public class DataReaderTest {
 
     System.out.println(matches);
 
+  }
+
+
+  /**
+   * from lp_task_test_data.txt
+   *
+   * min ( 1 * x + 3 * y )
+   * -4 * x - 6 * y - 2 <= 0
+   * - 6 * y - 2 <= 0
+   * 6 * y + 2 <= 0
+   * 4 * x + 6 * y + 2 <= 0
+   *
+   * that is equals to
+   *
+   * min Y
+   * -2 * x - 2 * Y - 2 <= 0
+   * 2 * x - 2 * Y - 2 <= 0
+   * -2 * x + 2 * Y + 2 <= 0
+   * 2 * x + 2 * Y + 2 <= 0
+   *
+   * that is equals to
+   *
+   * min Y
+   * Y >= -1 * x - 1
+   * Y >= 1 * x - 1
+   * Y <= -1 * x + 1
+   * Y <= 1 * x + 1
+   * */
+  @Test
+  public void lpTask_test() throws URISyntaxException, IOException {
+    String input = Files.lines(Paths.get(
+            this.getClass()
+                    .getClassLoader()
+                    .getResource("lp_task_test_data.txt")
+                    .toURI()))
+            .reduce((s1, s2) -> s1 + "\n" + s2)
+            .orElse("");
+
+    LPTask lpTask = new DataReader().readLPTask(input);
+
+    Assert.assertEquals(1, lpTask.a, 0.0001);
+    Assert.assertEquals(3, lpTask.b, 0.0001);
+
+    Assert.assertArrayEquals(new double[] {-4, 0, 0, 4}, lpTask.A, 0.0001);
+    Assert.assertArrayEquals(new double[] {-6, -6, 6, 6}, lpTask.B, 0.0001);
+    Assert.assertArrayEquals(new double[] {-2, -2, 2, 2}, lpTask.C, 0.0001);
   }
 
 }

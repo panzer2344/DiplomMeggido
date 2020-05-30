@@ -2,8 +2,10 @@ package solver;
 
 import median.MedianFinder;
 import model.Inequality;
+import model.LPTask;
 import org.javatuples.Pair;
 import solver.splitter.Splitter2D;
+import solver.transformer.Transformer2D;
 
 import java.util.*;
 
@@ -21,6 +23,13 @@ public class Solver2D {
   private final double EPSILON = Math.pow(10, -15);
 
   public Solver2D() {}
+
+  /**
+   * TODO: make tests
+   * */
+  public Pair<Double, Double> solve(LPTask lpTask) {
+    return solve(new Transformer2D().transform(lpTask));
+  }
 
   public Pair<Double, Double> solve(Inequality[] inequalities){
     Splitter2D.Splitted splitted = new Splitter2D().split(inequalities);
@@ -148,7 +157,7 @@ public class Solver2D {
    * split by pairs and delete some inequalities for suitable and move nonSuitable from input array to output list parameter in runtime
    * @return array of intersections
    * */
-  public double[] getIntersections(Inequality[] inequalities, Collection<Inequality> nonSuitable, double leftBorder, double rightBorder) {
+  protected double[] getIntersections(Inequality[] inequalities, Collection<Inequality> nonSuitable, double leftBorder, double rightBorder) {
     // create list for storing result intersections
     List<Double> intersections = new LinkedList<>();
     // stack for inequalities, used for splitting on pairs
