@@ -65,6 +65,8 @@ public class Solver2DWithBruteforce extends Solver2D {
                 double intersection = getIntersection(firstCandidate, secondCandidate);
                 double y = firstCandidate.computeFuncR2(intersection);
 
+                if(Double.compare(y, getMinFunctionFeasibleValue(intersection, bot)) != 0) break;
+
                 // if in feasible set, then try to exchange minimum
                 if(intersection >= leftBorder && intersection <= rightBorder) {
                     if(y < min) {

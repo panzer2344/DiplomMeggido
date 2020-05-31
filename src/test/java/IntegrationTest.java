@@ -8,10 +8,15 @@ import org.junit.Test;
 import solver.Solver2D;
 import solver.Solver2DWithBruteforce;
 import solver.transformer.Transformer2D;
+import util.LPTaskGenerator;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+
+import static model.Inequality.Sign.GREAT_OR_EQUAL;
+import static model.Inequality.Sign.LESS_OR_EQUAL;
+import static model.Inequality.ZERO_CONSTRAINT;
 
 public class IntegrationTest {
 
@@ -103,6 +108,110 @@ public class IntegrationTest {
     @Test
     public void test1_with_breeder_x1000000() throws IOException, URISyntaxException {
         test("lp_task_test_data_1.txt", new Pair<>(0.0, -1.0), 1000000, true);
+    }
+
+    /**
+     *
+     * min Y
+     * {
+     *    Y >= -10 * x - 5
+     *    Y >= -5 * x - 4
+     *    Y >= 10 * x - 5
+     *    Y >= 5 * x - 4
+     *    Y <= -10 * x + 5
+     *    Y <= -5 * x + 4
+     *    Y <= 10 * x + 5
+     *    Y <= 5 * x + 4
+     * }
+     *
+     * */
+    @Test
+    public void test2() {
+        Inequality[] inequalities = new Inequality[]{
+                new Inequality(new double[]{-10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+        };
+
+        LPTask lpTask = new LPTaskGenerator().generate(0, 1, inequalities);
+        Solver2DWithBreed solver2D = new Solver2DWithBreed(new Solver2DWithBruteforce());
+
+        Pair<Double, Double> actual = solver2D.solve(lpTask, 20, 0.5);
+        Pair<Double, Double> expected = new Pair<>(0.0, -4.0);
+
+        Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.001);
+        Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.001);
+    }
+
+    @Test
+    public void test2_x9() {
+        Inequality[] inequalities = new Inequality[]{
+                new Inequality(new double[]{-10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+        };
+
+        LPTask lpTask = new LPTaskGenerator().generate(0, 1, inequalities);
+        Solver2DWithBreed solver2D = new Solver2DWithBreed(new Solver2DWithBruteforce());
+
+        Pair<Double, Double> actual = solver2D.solve(lpTask, 9, 0.5);
+        Pair<Double, Double> expected = new Pair<>(0.0, -4.0);
+
+        Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.001);
+        Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.001);
+    }
+
+    @Test
+    public void test2_x10() {
+        Inequality[] inequalities = new Inequality[]{
+                new Inequality(new double[]{-10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+        };
+
+        LPTask lpTask = new LPTaskGenerator().generate(0, 1, inequalities);
+        Solver2DWithBreed solver2D = new Solver2DWithBreed(new Solver2DWithBruteforce());
+
+        Pair<Double, Double> actual = solver2D.solve(lpTask, 10, 0.5);
+        Pair<Double, Double> expected = new Pair<>(0.0, -4.0);
+
+        Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.001);
+        Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.001);
+    }
+
+    @Test
+    public void test2_1() {
+        Inequality[] inequalities = new Inequality[]{
+                new Inequality(new double[]{-10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, -5}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, -4}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{10, 5}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{5, 4}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+        };
+
+        Pair<Double, Double> actual = new Solver2DWithBruteforce().solve(inequalities);
+        Pair<Double, Double> expected = new Pair<>(0.0, -4.0);
+
+        Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.001);
+        Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.001);
     }
 
     /**

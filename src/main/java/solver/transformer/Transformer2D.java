@@ -49,7 +49,10 @@ public class Transformer2D {
         double beta = b_i / b;
         double alpha = a_i - a * beta;
 
-        if(Double.compare(beta, 0) == 0) return new Inequality(new double[]{a_i, c_i}, GREAT_OR_EQUAL, ZERO_CONSTRAINT);
+        if(Double.compare(beta, 0.0) == 0 || Double.compare(beta, -0.0) == 0) {
+            if(Double.compare(a_i, 0) >= 0) return new Inequality(new double[]{a_i, c_i}, GREAT_OR_EQUAL, ZERO_CONSTRAINT);
+            else return new Inequality(new double[]{-a_i, -c_i}, LESS_OR_EQUAL, ZERO_CONSTRAINT);
+        }
 
         double sigma = -alpha / beta;
         double gamma = -c_i / beta;
