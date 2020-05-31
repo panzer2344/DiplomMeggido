@@ -15,12 +15,12 @@ public class Solver2D {
 
   private final MedianFinder medianFinder = new MedianFinder();
 
-  private Inequality[] top = null;
-  private Inequality[] bot = null;
-  private double leftBorder = Double.NEGATIVE_INFINITY;
-  private double rightBorder = Double.POSITIVE_INFINITY;
+  protected Inequality[] top = null;
+  protected Inequality[] bot = null;
+  protected double leftBorder = Double.NEGATIVE_INFINITY;
+  protected double rightBorder = Double.POSITIVE_INFINITY;
 
-  private final double EPSILON = Math.pow(10, -15);
+  protected final double EPSILON = Math.pow(10, -15);
 
   public Solver2D() {}
 
@@ -46,7 +46,7 @@ public class Solver2D {
   // updated[17.05.2020] : added dropping top inequalities actions
   /*** TODO : need to test this action, and write some more integration tests for all R^2 algo */
   protected Pair<Double, Double> recursiveSolve() {
-    if(bot.length <= 1) return bruteForceSolve(top, bot, leftBorder, rightBorder);
+    //if(bot.length <= 3) return bruteForceSolve();
 
     Set<Inequality> nonSuitable = new HashSet<>();
     double[] botIntersections = getIntersections(bot, nonSuitable, leftBorder, rightBorder);
@@ -68,8 +68,8 @@ public class Solver2D {
 
     double leftBottomIncline = getLeftBottomIncline(bottomIneqsAtX);
     double rightBottomIncline = getRightBottomIncline(bottomIneqsAtX);
-    //double leftTopIncline = getLeftTopIncline(topIneqsAtX);
-    //double rightTopInline = getRightTopIncline(topIneqsAtX);
+    double leftTopIncline = getLeftTopIncline(topIneqsAtX);
+    double rightTopInline = getRightTopIncline(topIneqsAtX);
 
     if (isFeasible(minFuncFeasibleValue, maxFuncFeasibleValue)) {
       if (isOptimum(leftBottomIncline, rightBottomIncline)) {
@@ -82,72 +82,17 @@ public class Solver2D {
             leftBorder = median + EPSILON;
         }
       }
-    } /* else {
+    } else {
         if ( isFeasibleOnLeft(leftBottomIncline, leftTopIncline) ) {
-            rightBorder = median;
+            rightBorder = median - EPSILON;
         } else if ( isFeasibleOnRight(rightBottomIncline, rightTopInline) ) {
-            leftBorder = median;
+            leftBorder = median + EPSILON;
         }
-    } */
+    }
 
     return recursiveSolve();
   }
 
-
-  /**
-   * works correctly only if there are one bot inequality
-   * */
-  protected Pair<Double, Double> bruteForceSolve(Inequality[] top, Inequality[] bot, double leftBorder, double rightBorder) {
-    double min = Double.POSITIVE_INFINITY;
-    // merge two arrays into one common
-    Inequality[] allIneqs = new Inequality[top.length + bot.length];
-    System.arraycopy(top, 0, allIneqs, 0, top.length);
-    System.arraycopy(bot, 0, allIneqs, top.length, bot.length);
-
-    // compute all intersections and find minimum from all of this
-    double resultX = Double.NaN;
-    for(int i = 0; i < allIneqs.length; i++) {
-      for(int j = i + 1; j < allIneqs.length; j++) {
-        Inequality firstCandidate = allIneqs[i];
-        Inequality secondCandidate = allIneqs[j];
-
-        double intersection = getIntersection(firstCandidate, secondCandidate);
-        double y = firstCandidate.computeFuncR2(intersection);
-
-        // if in feasible set, then try to exchange minimum
-        if(intersection >= leftBorder && intersection <= rightBorder) {
-          if(y < min) {
-            min = y;
-            resultX = intersection;
-          }
-        }
-      }
-    }
-
-    // if no minimum founded in feasible set among intersections
-    if(Double.isNaN(resultX)) {
-      // then try to exchange minimum by border values
-      for (Inequality inequality : allIneqs) {
-        double onLeft = inequality.computeFuncR2(leftBorder);
-        double onRight = inequality.computeFuncR2(rightBorder);
-        // firstly compare values on borders
-        // then compare winner with min
-        if (onLeft < onRight) {
-          if (onLeft < min) {
-            min = onLeft;
-            resultX = leftBorder;
-          }
-        } else {
-          if (onRight < min) {
-            min = onRight;
-            resultX = rightBorder;
-          }
-        }
-      }
-    }
-
-    return new Pair<>(resultX, min);
-  }
 
   /**
    * @param inequalities input inequalities array, for splitting and filtering
@@ -246,11 +191,11 @@ public class Solver2D {
     // updated[17.05.2020] : added checking on suitable on feasibility for TOP ineqs
     // todo: need to test this adding
     if(isTopConstraint(first)) {
-      if(intersection > rightBorder) return getWithSmallerIncline(first, second);
-      if(intersection < leftBorder) return getWithGreaterIncline(first, second);
+      if(Double.compare(intersection, rightBorder) > 0) return getWithSmallerIncline(first, second);
+      if(Double.compare(intersection, leftBorder) < 0) return getWithGreaterIncline(first, second);
     } else if(isBottomConstraint(second)) {
-      if(intersection > rightBorder) return getWithGreaterIncline(first, second);
-      if(intersection < leftBorder) return getWithSmallerIncline(first, second);
+      if(Double.compare(intersection, rightBorder) > 0) return getWithGreaterIncline(first, second);
+      if(Double.compare(intersection, leftBorder) < 0) return getWithSmallerIncline(first, second);
     }
 
     return null;
@@ -624,5 +569,13 @@ public class Solver2D {
     System.arraycopy(first, 0, merged, 0, first.length);
     System.arraycopy(second, 0, merged, first.length, second.length);
     return merged;
+  }
+
+  protected int getBotLength() {
+    return bot.length;
+  }
+
+  protected int getTopLength() {
+    return top.length;
   }
 }

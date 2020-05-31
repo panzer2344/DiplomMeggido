@@ -15,6 +15,7 @@ public class DataBreeder {
      * @return array of offsetted ineqs
      * */
     public Inequality[] breed(Inequality[] originalIneqs, int rate, double offset) {
+        if(Double.compare(rate, 0) <= 0) throw new IllegalArgumentException("rate should be greater then 0");
         if(Double.compare(offset, 0) <= 0) throw new IllegalArgumentException("offset should be greater then 0");
 
         Inequality[] result = new Inequality[originalIneqs.length * rate];

@@ -3,6 +3,7 @@ import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import solver.Solver2D;
+import solver.Solver2DWithBruteforce;
 
 import java.util.*;
 
@@ -1072,8 +1073,10 @@ public class Solver2DTest {
     double leftBorder = -0.5;
     double rightBorder = 0.5;
 
+    TestableSolver2DWithBruteforce solverWithBruteforce = new TestableSolver2DWithBruteforce(top, bottom, leftBorder, rightBorder);
+
     Pair<Double, Double> expected = new Pair<>(0.0, -1.0);
-    Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+    Pair<Double, Double> actual = solverWithBruteforce.bruteForceSolve();
 
     Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
     Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
@@ -1097,8 +1100,10 @@ public class Solver2DTest {
     double leftBorder = 0;
     double rightBorder = 2;
 
+    TestableSolver2DWithBruteforce solverWithBruteforce = new TestableSolver2DWithBruteforce(top, bottom, leftBorder, rightBorder);
+
     Pair<Double, Double> expected = new Pair<>(1.0, 0.0);
-    Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+    Pair<Double, Double> actual = solverWithBruteforce.bruteForceSolve();
 
     Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
     Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
@@ -1122,8 +1127,10 @@ public class Solver2DTest {
     double leftBorder = 0;
     double rightBorder = 0.5;
 
+    TestableSolver2DWithBruteforce solverWithBruteforce = new TestableSolver2DWithBruteforce(top, bottom, leftBorder, rightBorder);
+
     Pair<Double, Double> expected = new Pair<>(0.5, 0.5);
-    Pair<Double, Double> actual = solver.bruteForceSolve(top, bottom, leftBorder, rightBorder);
+    Pair<Double, Double> actual = solverWithBruteforce.bruteForceSolve();
 
     Assert.assertEquals(expected.getValue0(), actual.getValue0(), 0.00001);
     Assert.assertEquals(expected.getValue1(), actual.getValue1(), 0.00001);
@@ -1203,11 +1210,6 @@ public class Solver2DTest {
     @Override
     protected Pair<Double, Double> recursiveSolve() {
       return super.recursiveSolve();
-    }
-
-    @Override
-    protected Pair<Double, Double> bruteForceSolve(Inequality[] top, Inequality[] bot, double leftBorder, double rightBorder) {
-      return super.bruteForceSolve(top, bot, leftBorder, rightBorder);
     }
 
     @Override
@@ -1388,6 +1390,21 @@ public class Solver2DTest {
     @Override
     protected boolean isOptimum(double leftBottomIncline, double rightBottomIncline) {
       return super.isOptimum(leftBottomIncline, rightBottomIncline);
+    }
+  }
+
+  private class TestableSolver2DWithBruteforce extends Solver2DWithBruteforce {
+    public TestableSolver2DWithBruteforce(Inequality[] top, Inequality[] bot, double leftBorder, double rightBorder) {
+      super();
+      super.top = top;
+      super.bot = bot;
+      super.leftBorder = leftBorder;
+      super.rightBorder = rightBorder;
+    }
+
+    @Override
+    public Pair<Double, Double> bruteForceSolve() {
+      return super.bruteForceSolve();
     }
   }
 

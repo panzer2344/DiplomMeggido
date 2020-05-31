@@ -175,7 +175,7 @@ public class DataReaderTest {
 
     Assert.assertArrayEquals(new double[] {-4, 0, 0, 4}, lpTask.A, 0.0001);
     Assert.assertArrayEquals(new double[] {-6, -6, 6, 6}, lpTask.B, 0.0001);
-    Assert.assertArrayEquals(new double[] {-2, -2, 2, 2}, lpTask.C, 0.0001);
+    Assert.assertArrayEquals(new double[] {-2, -2, -2, -2}, lpTask.C, 0.0001);
   }
 
 }
