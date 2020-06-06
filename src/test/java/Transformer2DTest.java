@@ -1,10 +1,9 @@
 import model.Inequality;
 import model.LPTask;
+import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import solver.transformer.Transformer2D;
-
-import java.util.Arrays;
 
 import static model.Inequality.Sign.GREAT_OR_EQUAL;
 import static model.Inequality.Sign.LESS_OR_EQUAL;
@@ -47,6 +46,30 @@ public class Transformer2DTest {
         Inequality[] actual = new Transformer2D().transform(lpTask);
 
         checkIneqsOnEqual(expected, actual);
+    }
+
+    @Test
+    public void test3() {
+        LPTask lpTask = new LPTask(1, 1, new double[0], new double[0], new double[0]);
+        Pair<Double, Double> toTransformBack = new Pair<Double, Double>(1.0, 2.0);
+
+        Pair<Double, Double> expected = new Pair<Double, Double>(1.0, 1.0);
+        Pair<Double, Double> actual = Transformer2D.transformResultBack(lpTask, toTransformBack);
+
+        Assert.assertEquals(expected.getValue0(), actual.getValue0());
+        Assert.assertEquals(expected.getValue1(), actual.getValue1());
+    }
+
+    @Test
+    public void test4() {
+        LPTask lpTask = new LPTask(3, -7, new double[0], new double[0], new double[0]);
+        Pair<Double, Double> toTransformBack = new Pair<Double, Double>(-7.0, 28.0);
+
+        Pair<Double, Double> expected = new Pair<Double, Double>(-7.0, -7.0);
+        Pair<Double, Double> actual = Transformer2D.transformResultBack(lpTask, toTransformBack);
+
+        Assert.assertEquals(expected.getValue0(), actual.getValue0());
+        Assert.assertEquals(expected.getValue1(), actual.getValue1());
     }
 
     public static void checkIneqsOnEqual(Inequality[] expected, Inequality[] actual) {

@@ -60,12 +60,15 @@ public class Solver2DWithBruteforce extends Solver2D {
                 Inequality firstCandidate = allIneqs[i];
                 Inequality secondCandidate = allIneqs[j];
 
-                if(isParallel(firstCandidate, secondCandidate)) break;
+                if(isParallel(firstCandidate, secondCandidate)) continue;
 
                 double intersection = getIntersection(firstCandidate, secondCandidate);
                 double y = firstCandidate.computeFuncR2(intersection);
 
-                if(Double.compare(y, getMinFunctionFeasibleValue(intersection, bot)) != 0) break;
+                // y in intersection should be on bottom border
+                double bottomBorderValue = getMinFunctionFeasibleValue(intersection, bot);
+                double topBorderValue = getMaxFunctionFeasibleValue(intersection, top);
+                if(Double.compare(y, bottomBorderValue) != 0 || Double.compare(y, topBorderValue) > 0) continue;
 
                 // if in feasible set, then try to exchange minimum
                 if(intersection >= leftBorder && intersection <= rightBorder) {
@@ -85,12 +88,12 @@ public class Solver2DWithBruteforce extends Solver2D {
                 double onRight = inequality.computeFuncR2(rightBorder);
                 // firstly compare values on borders
                 // then compare winner with min
-                if (onLeft < onRight) {
+                if (onLeft < onRight && Double.compare(onLeft, getMinFunctionFeasibleValue(leftBorder, bot)) == 0) {
                     if (onLeft < min) {
                         min = onLeft;
                         resultX = leftBorder;
                     }
-                } else {
+                } else if(Double.compare(onRight, getMinFunctionFeasibleValue(rightBorder, bot)) == 0) {
                     if (onRight < min) {
                         min = onRight;
                         resultX = rightBorder;

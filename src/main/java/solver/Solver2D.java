@@ -28,7 +28,8 @@ public class Solver2D {
    * TODO: make tests
    * */
   public Pair<Double, Double> solve(LPTask lpTask) {
-    return solve(new Transformer2D().transform(lpTask));
+    Pair<Double, Double> result = solve(new Transformer2D().transform(lpTask));
+    return Transformer2D.transformResultBack(lpTask, result);
   }
 
   public Pair<Double, Double> solve(Inequality[] inequalities){
@@ -56,7 +57,8 @@ public class Solver2D {
     double[] topIntersections = getIntersections(top, nonSuitable, leftBorder, rightBorder);
     top = removeFromArray(top, nonSuitable);
 
-    double[] intersections = mergeArrays(botIntersections, topIntersections);
+    // [06.06.2020 19:30] add borders as possible points for median finder. Fix case when only one bot intersection exists.
+    double[] intersections = mergeArrays(botIntersections, topIntersections, new double[]{leftBorder, rightBorder});
 
     double median = medianFinder.find(intersections);
 
@@ -568,6 +570,21 @@ public class Solver2D {
     double[] merged = new double[first.length + second.length];
     System.arraycopy(first, 0, merged, 0, first.length);
     System.arraycopy(second, 0, merged, first.length, second.length);
+    return merged;
+  }
+
+  protected double[] mergeArrays(double[]... arrays) {
+    int size = 0;
+    for(double[] array : arrays) size += array.length;
+
+    double[] merged = new double[size];
+
+    int alreadyFilledSize = 0;
+    for(double[] array : arrays) {
+      System.arraycopy(array, 0, merged, alreadyFilledSize, array.length);
+      alreadyFilledSize += array.length;
+    }
+
     return merged;
   }
 

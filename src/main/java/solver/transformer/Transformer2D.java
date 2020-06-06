@@ -2,6 +2,7 @@ package solver.transformer;
 
 import model.Inequality;
 import model.LPTask;
+import org.javatuples.Pair;
 
 import static model.Inequality.Sign.GREAT_OR_EQUAL;
 import static model.Inequality.Sign.LESS_OR_EQUAL;
@@ -60,6 +61,16 @@ public class Transformer2D {
         Inequality.Sign sign = Double.compare(beta, 0) > 0 ? LESS_OR_EQUAL : GREAT_OR_EQUAL;
 
         return new Inequality(new double[]{sigma, gamma}, sign, !ZERO_CONSTRAINT);
+    }
+
+    /**
+     * transform (X, Y) result from min Y
+     * to (x, y) from min ( a * x + b * y )
+     * */
+    public static Pair<Double, Double> transformResultBack(LPTask lpTask, Pair<Double, Double> input) {
+        if(Double.compare(lpTask.b, 0) == 0) throw new IllegalArgumentException();
+        double y = (input.getValue1() - lpTask.a * input.getValue0()) / lpTask.b;
+        return new Pair<>(input.getValue0(), y);
     }
 
 }

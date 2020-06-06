@@ -4,14 +4,12 @@ import model.LPTask;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -69,8 +67,6 @@ public class DataReaderTest {
     Files.delete(filePath);
     Files.write(filePath, testData.getBytes(), StandardOpenOption.CREATE);
 
-    Files.lines(filePath).forEach(System.out::println);
-
     DataReader dataReader = new DataReader();
     double[][] data = dataReader.readFromFile(filePath.toString());
 
@@ -127,8 +123,6 @@ public class DataReaderTest {
       }
 
     }
-
-    System.out.println(matches);
 
   }
 
