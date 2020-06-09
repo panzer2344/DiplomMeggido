@@ -1,9 +1,15 @@
+import data.reader.DataReader;
 import model.Inequality;
 import model.LPTask;
 import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import solver.transformer.Transformer2D;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static model.Inequality.Sign.GREAT_OR_EQUAL;
 import static model.Inequality.Sign.LESS_OR_EQUAL;
@@ -42,6 +48,29 @@ public class Transformer2DTest {
         Inequality[] expected = new Inequality[] {
                 new Inequality(new double[]{1, -1}, GREAT_OR_EQUAL, ZERO_CONSTRAINT),
                 new Inequality(new double[]{1, 1}, LESS_OR_EQUAL, ZERO_CONSTRAINT) };
+
+        Inequality[] actual = new Transformer2D().transform(lpTask);
+
+        checkIneqsOnEqual(expected, actual);
+    }
+
+    @Test
+    public void test5() throws URISyntaxException, IOException {
+        String lpTaskString = Files.lines(Paths.get(
+                this.getClass()
+                        .getClassLoader()
+                        .getResource("lp_task_test_data.txt")
+                        .toURI()))
+                .reduce((s1, s2) -> s1 + "\n" + s2)
+                .orElse("");
+        LPTask lpTask = new DataReader().readLPTask(lpTaskString);
+
+        Inequality[] expected = new Inequality[]{
+                new Inequality(new double[]{-1.0, -1.0}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{1.0, -1.0}, GREAT_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{1.0, 1.0}, LESS_OR_EQUAL, !ZERO_CONSTRAINT),
+                new Inequality(new double[]{-1.0, 1.0}, LESS_OR_EQUAL, !ZERO_CONSTRAINT)
+        };
 
         Inequality[] actual = new Transformer2D().transform(lpTask);
 

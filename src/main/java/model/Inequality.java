@@ -65,6 +65,10 @@ public class Inequality {
       return null;
     }
 
+    public boolean isLessOrEqual() {
+      return Sign.LESS.equals(this) || Sign.LESS_OR_EQUAL.equals(this);
+    }
+
   }
 
   public static final boolean ZERO_CONSTRAINT = true;
