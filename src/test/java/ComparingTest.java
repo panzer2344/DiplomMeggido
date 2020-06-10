@@ -107,6 +107,18 @@ public class ComparingTest {
         comparingLoop_realistic(generator, 1000000, 50000, false);
     }
 
+    @Test
+    public void speedCheck_only_Meggido_2(){
+        InequalitiesGenerator generator = new InequalitiesGenerator();
+        comparingLoop_realistic(generator, 1000000, 10000, false);
+    }
+
+    @Test
+    public void speedComparing_realistic_2(){
+        InequalitiesGenerator generator = new InequalitiesGenerator();
+        comparingLoop_realistic(generator, 2000, 20, true);
+    }
+
     private void comparingLoop(
             double a,
             double b,
