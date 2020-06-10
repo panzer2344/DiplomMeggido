@@ -175,7 +175,7 @@ public class ComparingTest {
             Inequality[] left = generator.generate(1, 1, 10, 15, rate, LESS_OR_EQUAL, ZERO_CONSTRAINT);
             Inequality[] right = generator.generate(1, 1, -10, -15, rate, GREAT_OR_EQUAL, ZERO_CONSTRAINT);
 
-            Inequality[] allIneqs = mergeIneqs(top, bot, left, right);
+            Inequality[] allIneqs = generator.mergeIneqs(top, bot, left, right);
             Pair<Double, Double> expected = new Pair<>(0.0, -5.0);
 
             LPTask lpTaskMeggido = new LPTaskGenerator().generate(0, 1, allIneqs);
@@ -228,20 +228,6 @@ public class ComparingTest {
         coeffs[1] = inequality.isZeroConstraint() ? 0 : 1;
         Relationship sign = inequality.getSign().isLessOrEqual() ? Relationship.LEQ : Relationship.GEQ;
         return new LinearConstraint(coeffs, sign, inequality.getFree());
-    }
-
-    private Inequality[] mergeIneqs(Inequality[]... arrays) {
-        int size = 0;
-        for(int i = 0; i < arrays.length; i++) size += arrays[i].length;
-
-        Inequality[] result = new Inequality[size];
-        int filledSize = 0;
-        for(int i = 0; i < arrays.length; i++) {
-            System.arraycopy(arrays[i], 0, result, filledSize, arrays[i].length);
-            filledSize += arrays[i].length;
-        }
-
-        return result;
     }
 
 

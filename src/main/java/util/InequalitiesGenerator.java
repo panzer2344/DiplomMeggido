@@ -26,4 +26,18 @@ public class InequalitiesGenerator {
         return top;
     }
 
+    public Inequality[] mergeIneqs(Inequality[]... arrays) {
+        int size = 0;
+        for(int i = 0; i < arrays.length; i++) size += arrays[i].length;
+
+        Inequality[] result = new Inequality[size];
+        int filledSize = 0;
+        for(int i = 0; i < arrays.length; i++) {
+            System.arraycopy(arrays[i], 0, result, filledSize, arrays[i].length);
+            filledSize += arrays[i].length;
+        }
+
+        return result;
+    }
+
 }
