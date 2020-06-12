@@ -1,11 +1,13 @@
 package data.reader;
 
-import com.sun.xml.internal.ws.util.StringUtils;
 import model.Inequality;
 import model.LPTask;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -113,19 +115,31 @@ public class DataReader {
   }
 
   public <T> T readFromFile(String fileName, Function<String, T> readFromStrFunction) throws IOException {
+    File outOfClassPath = new File(fileName);
+    if(outOfClassPath.exists()) {
       String lines = Files.lines(Paths.get(fileName))
-          .reduce((before, next) -> before + lineSeparator + next)
-          .orElse("");
+              .reduce((before, next) -> before + lineSeparator + next)
+              .orElse("");
       return readFromStrFunction.apply(lines);
+    } else {
+      try {
+        String lines = readStringFromClasspath(fileName);
+        return readFromStrFunction.apply(lines);
+      } catch (URISyntaxException e) {
+        throw new IOException(e);
+      }
+    }
+
   }
 
   public String readStringFromClasspath(String filename) throws URISyntaxException, IOException {
-    return Files.readAllLines(
-            Paths.get(this.getClass()
-                    .getClassLoader()
-                    .getResource(filename).toURI()))
+    URL fileUrl = this.getClass().getClassLoader().getResource(filename);
+
+    if(fileUrl == null) throw new FileNotFoundException(filename + " not found");
+
+    return Files.readAllLines(Paths.get(fileUrl.toURI()))
             .stream()
-            .reduce((s1, s2) -> s1 + "\n" + s2)
+            .reduce((before, next) -> before + lineSeparator + next)
             .orElse("");
   }
 

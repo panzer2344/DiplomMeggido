@@ -7,6 +7,7 @@ import org.apache.commons.math3.optim.linear.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.javatuples.Pair;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import solver.Solver2D;
 import solver.Solver2DWithBruteforce;
@@ -15,6 +16,8 @@ import util.LPTaskGenerator;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import static model.Inequality.Sign.GREAT_OR_EQUAL;
 import static model.Inequality.Sign.LESS_OR_EQUAL;
@@ -54,6 +57,7 @@ public class ComparingTest {
         Assert.assertArrayEquals(new double[]{0.0, 0.0}, pointValuePair.getPoint(), 0.000001);
     }
 
+    @Ignore
     @Test
     public void speedComparing_1() {
         Inequality[] inequalities = new Inequality[]{
@@ -67,6 +71,7 @@ public class ComparingTest {
         comparingLoop(0, 1, inequalities, expected, 2000, 20, 0.5);
     }
 
+    @Ignore
     @Test
     public void speedComparing_2() {
         Inequality[] inequalities = new Inequality[]{
@@ -82,6 +87,7 @@ public class ComparingTest {
         comparingLoop(0, 1, inequalities, expected, 2000, 20, 0.5);
     }
 
+    @Ignore
     @Test
     public void speedComparing_3() {
         Inequality[] inequalities = new Inequality[]{
@@ -95,29 +101,68 @@ public class ComparingTest {
         comparingLoop(0, 1, inequalities, expected, 2000, 20, 0.5);
     }
 
+    @Ignore
     @Test
     public void speedComparing_realistic_1(){
         InequalitiesGenerator generator = new InequalitiesGenerator();
         comparingLoop_realistic(generator, 1500, 15, true);
     }
 
+    @Ignore
     @Test
     public void speedCheck_only_Meggido(){
         InequalitiesGenerator generator = new InequalitiesGenerator();
         comparingLoop_realistic(generator, 1000000, 50000, false);
     }
 
+    @Ignore
     @Test
     public void speedCheck_only_Meggido_2(){
         InequalitiesGenerator generator = new InequalitiesGenerator();
         comparingLoop_realistic(generator, 1000000, 10000, false);
     }
 
+    @Ignore
     @Test
     public void speedComparing_realistic_2(){
         InequalitiesGenerator generator = new InequalitiesGenerator();
         comparingLoop_realistic(generator, 2000, 20, true);
     }
+
+    /*
+    @Ignore
+    @Test
+    public void buildPointsForGraph() {
+        String valuesStringMeggido = "2, 269, 126, 327, 343, 134, 152, 175, 205, 237, 249, 295, 282, 313, 370, 403, 334, 439, 537, 497, 579, 684, 628, 659, 731, 689, 774, 809, 932, 1009, 1172, 1135, 1045, 2869, 3135, 3266, 3076, 3690, 1247, 3368, 3693, 3404, 3617, 1603, 1519, 3411, 1673, 4049, 2020, 3268, 4525, 2062, 4912, 2046, 4830, 1997, 5219, 2466, 5230, 2251, 4884, 2367, 5802, 2600, 5582, 2642, 6206, 3101, 6350, 2715, 5792, 2963, 6504, 2836, 6148, 2990, 6022, 3141, 6224, 3225, 5349, 3347, 7228, 3674, 5932, 3382, 6104, 3369, 6864, 9117, 15390, 15128, 15668, 14871, 11118, 9802, 16938, 11354, 12305, 8481";
+        String valuesStringSimplex = "17, 10, 10, 9, 9, 14, 25, 27, 43, 57, 61, 76, 86, 127, 122, 142, 174, 190, 193, 215, 235, 273, 287, 308, 366, 373, 418, 477, 460, 584, 521, 555, 715, 632, 670, 733, 762, 942, 808, 844, 937, 944, 1007, 1069, 1082, 1308, 1202, 1273, 1462, 1391, 1724, 1534, 1913, 1664, 2080, 1821, 2149, 2000, 2239, 2545, 2312, 2441, 2596, 2763, 2960, 3027, 3423, 3441, 3571, 3859, 3905, 4215, 3998, 4121, 4146, 4457, 4647, 4958, 5637, 5396, 5816, 5995, 6217, 6803, 6960, 7391, 7474, 8358, 8486, 8621, 9178, 9532, 9999, 10622, 11248, 11660, 12046, 15002, 16104, 14327";
+        int rateStart = 1;
+        int rateFinish = 1000000;
+        //int rateFinish = 2000;
+        //int rateFinish = 1500;
+        int step = 10000;
+        //int step = 50000;
+        //int step = 20;
+        //int step = 15;
+        int countForRate = 8;
+        //int countForRate = 8;
+
+        StringBuilder resultBuilderMeggido = new StringBuilder();
+        StringBuilder resultBuilderSimplex = new StringBuilder();
+
+        String[] valuesMeggido = valuesStringMeggido.split(", ");
+        String[] valuesSimplex = valuesStringSimplex.split(", ");
+        for(int i = 0; i < valuesMeggido.length; i++) {
+            long x = rateStart + i * step * countForRate;
+            long y_Meggido = Long.parseLong(valuesMeggido[i]);
+            long y_Simplex = Long.parseLong(valuesSimplex[i]);
+            resultBuilderMeggido.append("(").append(x).append(";").append(y_Meggido).append(")");
+            resultBuilderSimplex.append("(").append(x).append(";").append(y_Simplex).append(")");
+        }
+
+        System.out.println(resultBuilderMeggido.toString());
+        System.out.println(resultBuilderSimplex.toString());
+    }
+     */
 
     private void comparingLoop(
             double a,

@@ -3,9 +3,11 @@ import model.Inequality;
 import model.LPTask;
 import org.javatuples.Pair;
 import solver.Solver2D;
+import solver.Solver2DWithBruteforce;
 import util.InequalitiesGenerator;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -73,7 +75,7 @@ public class Main {
                         Long.parseLong(onGenerateArgs.getOrDefault("--top_start_a", "0")),
                         Long.parseLong(onGenerateArgs.getOrDefault("--top_end_a", "0")),
                         Long.parseLong(onGenerateArgs.getOrDefault("--top_start_free", "0")),
-                        Long.parseLong(onGenerateArgs.getOrDefault("--top_end", "0")),
+                        Long.parseLong(onGenerateArgs.getOrDefault("--top_end_free", "0")),
                         Integer.parseInt(onGenerateArgs.getOrDefault("--top_count", "0")),
                         Inequality.Sign.LESS_OR_EQUAL,
                         !Inequality.ZERO_CONSTRAINT);
@@ -82,7 +84,7 @@ public class Main {
                         Long.parseLong(onGenerateArgs.getOrDefault("--bot_start_a", "0")),
                         Long.parseLong(onGenerateArgs.getOrDefault("--bot_end_a", "0")),
                         Long.parseLong(onGenerateArgs.getOrDefault("--bot_start_free", "0")),
-                        Long.parseLong(onGenerateArgs.getOrDefault("--bot_end", "0")),
+                        Long.parseLong(onGenerateArgs.getOrDefault("--bot_end_free", "0")),
                         Integer.parseInt(onGenerateArgs.getOrDefault("--bot_count", "0")),
                         Inequality.Sign.GREAT_OR_EQUAL,
                         !Inequality.ZERO_CONSTRAINT);
@@ -107,7 +109,7 @@ public class Main {
 
         Inequality[] inequalities = inequalitiesGenerator.mergeIneqs(top, bot, left, right);
 
-        Pair<Double, Double> solution = new Solver2D().solve(inequalities);
+        Pair<Double, Double> solution = new Solver2DWithBruteforce().solve(inequalities);
 
         System.out.println("Solution: " + solution);
 
@@ -127,7 +129,7 @@ public class Main {
         try {
              lpTask = dataReader.readFromFile(fileName, dataReader::readLPTask);
         } catch (IOException io) {
-            System.out.println(io.getMessage());
+            System.out.println("error: " + io.getMessage());
             return;
         }
 
